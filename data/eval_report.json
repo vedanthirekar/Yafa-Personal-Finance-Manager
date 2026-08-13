@@ -1,0 +1,86 @@
+{
+  "accuracy": 0.7591240875912408,
+  "train_size": 2191,
+  "test_size": 548,
+  "report": {
+    "Education": {
+      "precision": 0.7931034482758621,
+      "recall": 0.71875,
+      "f1-score": 0.7540983606557377,
+      "support": 64.0
+    },
+    "Food": {
+      "precision": 0.7647058823529411,
+      "recall": 0.8888888888888888,
+      "f1-score": 0.8221343873517787,
+      "support": 117.0
+    },
+    "Health": {
+      "precision": 0.8260869565217391,
+      "recall": 0.5428571428571428,
+      "f1-score": 0.6551724137931034,
+      "support": 35.0
+    },
+    "Household": {
+      "precision": 0.78125,
+      "recall": 0.8333333333333334,
+      "f1-score": 0.8064516129032258,
+      "support": 60.0
+    },
+    "Investment": {
+      "precision": 0.875,
+      "recall": 0.6363636363636364,
+      "f1-score": 0.7368421052631579,
+      "support": 22.0
+    },
+    "Money transfer": {
+      "precision": 0.7727272727272727,
+      "recall": 0.85,
+      "f1-score": 0.8095238095238095,
+      "support": 20.0
+    },
+    "Social Life": {
+      "precision": 0.673202614379085,
+      "recall": 0.7357142857142858,
+      "f1-score": 0.7030716723549488,
+      "support": 140.0
+    },
+    "Subscription": {
+      "precision": 0.75,
+      "recall": 0.5,
+      "f1-score": 0.6,
+      "support": 12.0
+    },
+    "Tourism": {
+      "precision": 0.6,
+      "recall": 0.42857142857142855,
+      "f1-score": 0.5,
+      "support": 21.0
+    },
+    "Transportation": {
+      "precision": 0.9411764705882353,
+      "recall": 0.8421052631578947,
+      "f1-score": 0.8888888888888888,
+      "support": 57.0
+    },
+    "Uncategorized": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1-score": 0.0,
+      "support": 0.0
+    },
+    "accuracy": 0.7591240875912408,
+    "macro avg": {
+      "precision": 0.7070229677131942,
+      "recall": 0.6342349071715101,
+      "f1-score": 0.661471204612241,
+      "support": 548.0
+    },
+    "weighted avg": {
+      "precision": 0.7668197494422572,
+      "recall": 0.7591240875912408,
+      "f1-score": 0.757240607594348,
+      "support": 548.0
+    }
+  }
+}

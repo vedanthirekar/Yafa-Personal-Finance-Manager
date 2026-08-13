@@ -1,4 +1,8 @@
 .env/
+.env
 __pycache__
 database.csv
 audio.wav
+backend/yafa.db
+backend/qdrant_data/
+data/qdrant_eval_tmp/

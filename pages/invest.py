@@ -2,21 +2,21 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 from sidebar import generateSideBar
-from database import getData
+import api_client
 import pickle
 import random
 
 
 st.set_page_config(page_title="Investments", layout='wide')
 
-if 'authentication_status' not in st.session_state or st.session_state['authentication_status'] == False or st.session_state['authentication_status'] == None:
+if not st.session_state.get('authentication_status'):
     st.switch_page("main.py")
 
 
 generateSideBar()
 
 
-data = getData()
+data = pd.DataFrame(api_client.get_transactions())
 
 st.title("`Analysis` :money_with_wings:")
 st.divider()

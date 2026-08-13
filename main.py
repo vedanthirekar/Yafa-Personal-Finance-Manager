@@ -1,29 +1,11 @@
 import streamlit as st
-from streamlit_authenticator.exceptions import RegisterError
-import streamlit_authenticator as stauth
-import yaml
-from yaml.loader import SafeLoader
-from database import getData
-import numpy as np
+
+import api_client
 
 st.set_page_config(page_title="Home", layout='centered')
 
-with open('config.yaml') as authfile:
-    config = yaml.load(authfile, Loader=SafeLoader)
-
-authenticator = stauth.Authenticate(
-    config['credentials'],
-    config['cookie']['name'],
-    config['cookie']['key'],
-    config['cookie']['expiry_days'],
-    config['preauthorized']
-)
-
-def saveConfig():
-    with open("config.yaml", 'w') as authfile:
-        yaml.dump(config, authfile, default_flow_style=False)
-
-data = getData()
+if st.session_state.get('authentication_status'):
+    st.switch_page("pages/view.py")
 
 _, col2, _ = st.columns(3)
 
@@ -40,52 +22,42 @@ st.markdown("#### More than 50% of India's youngsters are financially illiterate
 st.markdown("""> Help us spread awareness about investments, savings and ultimately `Financial Freedom`. Knowledge about mutual funds, stocks and planning about financial goals make your money game unbeatable.""")
 st.divider()
 
-st.code("""
-        Get started now!
-        """)
+if st.button("🚀 Try Demo Account", use_container_width=True):
+    result = api_client.demo_login()
+    if result:
+        st.session_state["token"] = result["access_token"]
+        st.session_state["username"] = result["username"]
+        st.session_state["name"] = result["name"]
+        st.session_state["authentication_status"] = True
+        st.toast("Logged into demo account!")
+        st.switch_page("pages/view.py")
+st.divider()
 
-name, status, username = authenticator.login(location='sidebar')
+login_tab, register_tab = st.tabs(["Log in", "Register"])
 
-if status == True:
-    st.toast("Logged in!")
-    st.switch_page("pages/view.py")
-elif status == False:
-    st.error("incorrect username/password")
+with login_tab:
+    with st.form("login_form"):
+        username = st.text_input("Username")
+        password = st.text_input("Password", type="password")
+        submitted = st.form_submit_button("Log in")
+    if submitted:
+        result = api_client.login(username, password)
+        if result:
+            st.session_state["token"] = result["access_token"]
+            st.session_state["username"] = result["username"]
+            st.session_state["name"] = result["name"]
+            st.session_state["authentication_status"] = True
+            st.toast("Logged in!")
+            st.switch_page("pages/view.py")
 
-try:
-    email, username, name = authenticator.register_user(preauthorization=False)
-    if email:
-        saveConfig()
-        st.success("User created successfully. Please log in.")
-except RegisterError as e:
-    st.error(str(e))
-
-#
-
-# st.title("Team Himalaya", anchor=False)
-# st.divider()
-#
-# st.write("Hi! This is our official submission for the HackMatrix 2024 Hackathon!")
-# st.write("This is a AI enabled expense tracker.")
-#
-# st.markdown("""
-# `Features`
-# - Uses Speech to Text and NLP to identify keywords within a user's sentence.
-# - Visualize and understand your spending better (Coming Soon!)
-# - Get investment recommendations according to your income
-# """)
-# st.divider()
-#
-# # col1, col2, col3, col4 = st.columns(4)
-#
-# st.code("Pratham Powar (pspiagicw)")
-# st.link_button("Github", "https://github.com/pspiagicw")
-#
-# st.code("Arnav Tatewar")
-# st.link_button("Github", "link here")
-#
-# st.code("Prithviraj More")
-# st.link_button("Github", "https://github.com/Prithxvhie44")
-#
-# st.code("Vedant Hirekar")
-# st.link_button("Github", "link here")
+with register_tab:
+    with st.form("register_form"):
+        reg_username = st.text_input("Username", key="reg_username")
+        reg_email = st.text_input("Email", key="reg_email")
+        reg_name = st.text_input("Full name", key="reg_name")
+        reg_password = st.text_input("Password", type="password", key="reg_password")
+        reg_submitted = st.form_submit_button("Register")
+    if reg_submitted:
+        result = api_client.register(reg_username, reg_email, reg_name, reg_password)
+        if result:
+            st.success("User created successfully. Please log in.")
