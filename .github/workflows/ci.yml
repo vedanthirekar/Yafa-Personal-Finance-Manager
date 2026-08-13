@@ -1,0 +1,135 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "revamp/**"]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  # A new push supersedes an in-flight run on the same ref.
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Tests need a real secret because Settings refuses to construct without one.
+  # This value is CI-only and grants nothing.
+  YAFA_JWT_SECRET: ci-only-secret-not-used-for-anything-real-0123456789
+
+jobs:
+  api:
+    name: API — lint, types, tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: yafa
+          POSTGRES_PASSWORD: yafa
+          POSTGRES_DB: yafa
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U yafa -d yafa"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+      qdrant:
+        image: qdrant/qdrant:v1.13.4
+        ports: ["6333:6333"]
+        # No healthcheck: the image is distroless, so it has no shell for
+        # Docker's health probe. The wait step below polls the port instead.
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - name: Install dependencies
+        # --locked fails if uv.lock is out of date with pyproject.toml, so a
+        # dependency change without a relock can't slip through.
+        run: uv sync --locked --group ml
+
+      - name: Wait for Qdrant
+        run: |
+          for _ in $(seq 1 30); do
+            curl -sf http://localhost:6333/readyz && exit 0
+            sleep 2
+          done
+          echo "Qdrant did not become ready"; exit 1
+
+      - name: Lint
+        run: uv run ruff check apps/api ml
+
+      - name: Format check
+        run: uv run ruff format --check apps/api ml
+
+      - name: Type check
+        run: uv run mypy apps/api/app
+        continue-on-error: true # advisory while annotations are completed
+
+      - name: Migrate
+        env:
+          YAFA_DATABASE_URL: postgresql+asyncpg://yafa:yafa@localhost:5432/yafa
+        run: uv run alembic upgrade head
+
+      - name: Test
+        env:
+          YAFA_DATABASE_URL: postgresql+asyncpg://yafa:yafa@localhost:5432/yafa
+          YAFA_QDRANT_URL: http://localhost:6333
+        run: uv run pytest apps/api/tests -p no:warnings --cov=apps/api/app --cov-report=term-missing
+
+      - name: Verify Power BI views apply
+        env:
+          PGPASSWORD: yafa
+        run: psql -h localhost -U yafa -d yafa -v ON_ERROR_STOP=1 -f powerbi/sql/star_schema.sql
+
+  web:
+    name: Web — lint, types, build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npm run lint
+      - run: npm run build
+
+  docker:
+    name: Docker images build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build API image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: infra/api.Dockerfile
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build web image
+        uses: docker/build-push-action@v6
+        with:
+          context: apps/web
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
