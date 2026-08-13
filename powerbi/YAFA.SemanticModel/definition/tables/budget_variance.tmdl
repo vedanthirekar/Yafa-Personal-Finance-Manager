@@ -1,0 +1,72 @@
+/// Budget vs actual per category-month. A forecast is only actionable next to
+/// a target, so the comparison is materialized upstream rather than assembled
+/// in DAX on every visual.
+table budget_variance
+	lineageTag: a1b2c3d4-5555-4a05-9e55-000000000001
+
+	column user_id
+		dataType: int64
+		formatString: 0
+		isHidden
+		lineageTag: a1b2c3d4-5555-4a05-9e55-000000000002
+		summarizeBy: none
+		sourceColumn: user_id
+
+	column month_start
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: a1b2c3d4-5555-4a05-9e55-000000000003
+		summarizeBy: none
+		sourceColumn: month_start
+
+	column category_key
+		dataType: string
+		lineageTag: a1b2c3d4-5555-4a05-9e55-000000000004
+		summarizeBy: none
+		sourceColumn: category_key
+
+	column actual_spend
+		dataType: decimal
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		lineageTag: a1b2c3d4-5555-4a05-9e55-000000000005
+		summarizeBy: sum
+		sourceColumn: actual_spend
+
+	column budget
+		dataType: decimal
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		lineageTag: a1b2c3d4-5555-4a05-9e55-000000000006
+		summarizeBy: sum
+		sourceColumn: budget
+
+	column variance
+		dataType: decimal
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		lineageTag: a1b2c3d4-5555-4a05-9e55-000000000007
+		summarizeBy: sum
+		sourceColumn: variance
+
+	column pct_of_budget
+		dataType: decimal
+		formatString: 0.0
+		lineageTag: a1b2c3d4-5555-4a05-9e55-000000000008
+		summarizeBy: none
+		sourceColumn: pct_of_budget
+
+	column is_over_budget
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: a1b2c3d4-5555-4a05-9e55-000000000009
+		summarizeBy: none
+		sourceColumn: is_over_budget
+
+	partition budget_variance = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database(ServerParam, DatabaseParam),
+				    Data = Source{[Schema="public", Item="vw_powerbi_budget_variance"]}[Data]
+				in
+				    Data
+
+	annotation PBI_ResultType = Table

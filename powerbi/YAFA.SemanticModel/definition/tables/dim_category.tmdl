@@ -1,0 +1,77 @@
+/// One row per (user, category), with the monthly budget as an attribute.
+table dim_category
+	lineageTag: a1b2c3d4-2222-4a02-9e22-000000000001
+
+	column user_id
+		dataType: int64
+		formatString: 0
+		isHidden
+		lineageTag: a1b2c3d4-2222-4a02-9e22-000000000002
+		summarizeBy: none
+		sourceColumn: user_id
+
+	column category_key
+		dataType: string
+		lineageTag: a1b2c3d4-2222-4a02-9e22-000000000003
+		summarizeBy: none
+		sourceColumn: category_key
+		isKey
+
+	column category_name
+		dataType: string
+		lineageTag: a1b2c3d4-2222-4a02-9e22-000000000004
+		summarizeBy: none
+		sourceColumn: category_name
+
+	column transaction_count
+		dataType: int64
+		formatString: #,0
+		lineageTag: a1b2c3d4-2222-4a02-9e22-000000000005
+		summarizeBy: sum
+		sourceColumn: transaction_count
+
+	column total_spend
+		dataType: decimal
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		lineageTag: a1b2c3d4-2222-4a02-9e22-000000000006
+		summarizeBy: sum
+		sourceColumn: total_spend
+
+	column avg_transaction
+		dataType: decimal
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		lineageTag: a1b2c3d4-2222-4a02-9e22-000000000007
+		summarizeBy: none
+		sourceColumn: avg_transaction
+
+	column first_seen
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: a1b2c3d4-2222-4a02-9e22-000000000008
+		summarizeBy: none
+		sourceColumn: first_seen
+
+	column last_seen
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: a1b2c3d4-2222-4a02-9e22-000000000009
+		summarizeBy: none
+		sourceColumn: last_seen
+
+	column monthly_budget
+		dataType: decimal
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		lineageTag: a1b2c3d4-2222-4a02-9e22-00000000000a
+		summarizeBy: sum
+		sourceColumn: monthly_budget
+
+	partition dim_category = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database(ServerParam, DatabaseParam),
+				    Data = Source{[Schema="public", Item="vw_powerbi_dim_category"]}[Data]
+				in
+				    Data
+
+	annotation PBI_ResultType = Table

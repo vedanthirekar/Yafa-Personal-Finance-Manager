@@ -1,0 +1,254 @@
+/// Central fact table -- one row per transaction, joined to its most recent
+/// model prediction. All measures live here.
+table fct_transactions
+	lineageTag: a1b2c3d4-6666-4a06-9e66-000000000001
+
+	column transaction_key
+		dataType: int64
+		formatString: 0
+		isHidden
+		lineageTag: a1b2c3d4-6666-4a06-9e66-000000000002
+		summarizeBy: none
+		sourceColumn: transaction_key
+		isKey
+
+	column user_id
+		dataType: int64
+		formatString: 0
+		isHidden
+		lineageTag: a1b2c3d4-6666-4a06-9e66-000000000003
+		summarizeBy: none
+		sourceColumn: user_id
+
+	column date_key
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: a1b2c3d4-6666-4a06-9e66-000000000004
+		summarizeBy: none
+		sourceColumn: date_key
+
+	column category_key
+		dataType: string
+		lineageTag: a1b2c3d4-6666-4a06-9e66-000000000005
+		summarizeBy: none
+		sourceColumn: category_key
+
+	column merchant_key
+		dataType: string
+		lineageTag: a1b2c3d4-6666-4a06-9e66-000000000006
+		summarizeBy: none
+		sourceColumn: merchant_key
+
+	column description
+		dataType: string
+		lineageTag: a1b2c3d4-6666-4a06-9e66-000000000007
+		summarizeBy: none
+		sourceColumn: description
+
+	/// summarizeBy is none so dragging the raw column onto a visual doesn't
+	/// silently create an implicit SUM that bypasses the measures below.
+	column amount
+		dataType: decimal
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		lineageTag: a1b2c3d4-6666-4a06-9e66-000000000008
+		summarizeBy: none
+		sourceColumn: amount
+
+	column currency
+		dataType: string
+		lineageTag: a1b2c3d4-6666-4a06-9e66-000000000009
+		summarizeBy: none
+		sourceColumn: currency
+
+	/// voice | manual | import | demo_seed
+	column source
+		dataType: string
+		lineageTag: a1b2c3d4-6666-4a06-9e66-00000000000a
+		summarizeBy: none
+		sourceColumn: source
+
+	column is_voice_entry
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: a1b2c3d4-6666-4a06-9e66-00000000000b
+		summarizeBy: none
+		sourceColumn: is_voice_entry
+
+	column categorization_confidence
+		dataType: double
+		formatString: 0.00
+		lineageTag: a1b2c3d4-6666-4a06-9e66-00000000000c
+		summarizeBy: none
+		sourceColumn: categorization_confidence
+
+	column categorization_accepted
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: a1b2c3d4-6666-4a06-9e66-00000000000d
+		summarizeBy: none
+		sourceColumn: categorization_accepted
+
+	column predicted_category
+		dataType: string
+		lineageTag: a1b2c3d4-6666-4a06-9e66-00000000000e
+		summarizeBy: none
+		sourceColumn: predicted_category
+
+	column corrected_to
+		dataType: string
+		lineageTag: a1b2c3d4-6666-4a06-9e66-00000000000f
+		summarizeBy: none
+		sourceColumn: corrected_to
+
+	column model_version
+		dataType: string
+		lineageTag: a1b2c3d4-6666-4a06-9e66-000000000010
+		summarizeBy: none
+		sourceColumn: model_version
+
+	column confidence_band
+		dataType: string
+		lineageTag: a1b2c3d4-6666-4a06-9e66-000000000011
+		summarizeBy: none
+		sourceColumn: confidence_band
+
+	// ----------------------------------------------------------------------
+	// Core spend measures
+	// ----------------------------------------------------------------------
+
+	measure 'Total Spend' = SUM(fct_transactions[amount])
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		lineageTag: b1b2c3d4-6666-4a06-9e66-000000000001
+
+	measure 'Transaction Count' = COUNTROWS(fct_transactions)
+		formatString: #,0
+		lineageTag: b1b2c3d4-6666-4a06-9e66-000000000002
+
+	measure 'Avg Transaction' = DIVIDE([Total Spend], [Transaction Count])
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		lineageTag: b1b2c3d4-6666-4a06-9e66-000000000003
+
+	/// Uses DIVIDE rather than "/" throughout: DIVIDE returns blank on a zero
+	/// denominator instead of an error, which is what a chart should show for
+	/// a period with no data.
+	measure 'Spend Prior Month' =
+			CALCULATE([Total Spend], DATEADD(dim_date[date_key], -1, MONTH))
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		lineageTag: b1b2c3d4-6666-4a06-9e66-000000000004
+
+	measure 'MoM Change %' =
+			VAR Current_ = [Total Spend]
+			VAR Prior = [Spend Prior Month]
+			RETURN DIVIDE(Current_ - Prior, Prior)
+		formatString: +0.0%;-0.0%;0.0%
+		lineageTag: b1b2c3d4-6666-4a06-9e66-000000000005
+
+	measure 'Spend YTD' = TOTALYTD([Total Spend], dim_date[date_key])
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		lineageTag: b1b2c3d4-6666-4a06-9e66-000000000006
+
+	/// ALLSELECTED, not ALL: the share is relative to what the user has
+	/// filtered to, so it still reads as 100% across a slicer selection.
+	measure 'Category Share %' =
+			DIVIDE(
+			    [Total Spend],
+			    CALCULATE([Total Spend], ALLSELECTED(dim_category[category_key]))
+			)
+		formatString: 0.0%
+		lineageTag: b1b2c3d4-6666-4a06-9e66-000000000007
+
+	measure 'Rolling 3M Avg' =
+			AVERAGEX(
+			    DATESINPERIOD(dim_date[date_key], MAX(dim_date[date_key]), -3, MONTH),
+			    [Total Spend]
+			)
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		lineageTag: b1b2c3d4-6666-4a06-9e66-000000000008
+
+	// ----------------------------------------------------------------------
+	// Semantic categorization quality
+	// ----------------------------------------------------------------------
+
+	/// Averages only rows the model actually scored. Manual entries have a
+	/// null confidence and must not be counted as zero, which would drag the
+	/// average down for a reason unrelated to model quality.
+	measure 'Avg Categorization Confidence' =
+			AVERAGEX(
+			    FILTER(fct_transactions, NOT ISBLANK(fct_transactions[categorization_confidence])),
+			    fct_transactions[categorization_confidence]
+			)
+		formatString: 0.00
+		lineageTag: b1b2c3d4-6666-4a06-9e66-000000000009
+
+	measure 'Auto-Categorized Count' =
+			CALCULATE(
+			    [Transaction Count],
+			    NOT ISBLANK(fct_transactions[categorization_confidence])
+			)
+		formatString: #,0
+		lineageTag: b1b2c3d4-6666-4a06-9e66-00000000000a
+
+	/// The live counterpart to the offline evaluation: how often users kept
+	/// what the model suggested.
+	measure 'Categorization Acceptance %' =
+			DIVIDE(
+			    CALCULATE([Transaction Count], fct_transactions[categorization_accepted] = TRUE()),
+			    [Auto-Categorized Count]
+			)
+		formatString: 0.0%
+		lineageTag: b1b2c3d4-6666-4a06-9e66-00000000000b
+
+	measure 'Low Confidence Count' =
+			CALCULATE(
+			    [Transaction Count],
+			    fct_transactions[confidence_band] = "Low (<0.50)"
+			)
+		formatString: #,0
+		lineageTag: b1b2c3d4-6666-4a06-9e66-00000000000c
+
+	// ----------------------------------------------------------------------
+	// Voice adoption
+	// ----------------------------------------------------------------------
+
+	measure 'Voice Entry Count' =
+			CALCULATE([Transaction Count], fct_transactions[is_voice_entry] = TRUE())
+		formatString: #,0
+		lineageTag: b1b2c3d4-6666-4a06-9e66-00000000000d
+
+	measure 'Voice Entry %' = DIVIDE([Voice Entry Count], [Transaction Count])
+		formatString: 0.0%
+		lineageTag: b1b2c3d4-6666-4a06-9e66-00000000000e
+
+	// ----------------------------------------------------------------------
+	// Budget
+	// ----------------------------------------------------------------------
+
+	measure 'Total Budget' = SUM(budget_variance[budget])
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		lineageTag: b1b2c3d4-6666-4a06-9e66-00000000000f
+
+	measure 'Budget Variance' = [Total Budget] - [Total Spend]
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		lineageTag: b1b2c3d4-6666-4a06-9e66-000000000010
+
+	measure 'Budget Utilization %' = DIVIDE([Total Spend], [Total Budget])
+		formatString: 0.0%
+		lineageTag: b1b2c3d4-6666-4a06-9e66-000000000011
+
+	/// Drives conditional formatting: 1 over budget, 0 within, blank when no
+	/// budget is set for the category.
+	measure 'Over Budget Flag' =
+			IF(ISBLANK([Total Budget]), BLANK(), IF([Total Spend] > [Total Budget], 1, 0))
+		formatString: 0
+		lineageTag: b1b2c3d4-6666-4a06-9e66-000000000012
+
+	partition fct_transactions = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database(ServerParam, DatabaseParam),
+				    Data = Source{[Schema="public", Item="vw_powerbi_fct_transactions"]}[Data]
+				in
+				    Data
+
+	annotation PBI_ResultType = Table

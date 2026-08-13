@@ -1,0 +1,62 @@
+model Model
+	culture: en-US
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	discourageImplicitMeasures
+	sourceQueryCulture: en-US
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+/// Connection parameters. Change these in Power BI Desktop under
+/// Transform data > Edit parameters -- no query editing needed to point the
+/// model at a different host or database.
+expression ServerParam = "localhost:55432" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: 3f8c2a17-4b56-4d92-8e01-7c9b4a2f6d83
+
+	annotation PBI_ResultType = Text
+
+expression DatabaseParam = "yafa" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: 5a1d9e34-8f72-4c60-b3d5-1e6a8b0c7f29
+
+	annotation PBI_ResultType = Text
+
+ref table dim_date
+ref table dim_category
+ref table dim_merchant
+ref table fct_transactions
+ref table fct_monthly_spend
+ref table budget_variance
+
+/// Relationships all run one-to-many from dimension to fact, filtering in a
+/// single direction. Bidirectional filtering is deliberately avoided: with
+/// two dimensions over one fact it creates ambiguous filter paths that make
+/// totals depend on visual layout.
+relationship dim_date_fct_transactions
+	fromColumn: fct_transactions.date_key
+	toColumn: dim_date.date_key
+
+relationship dim_category_fct_transactions
+	fromColumn: fct_transactions.category_key
+	toColumn: dim_category.category_key
+
+relationship dim_merchant_fct_transactions
+	fromColumn: fct_transactions.merchant_key
+	toColumn: dim_merchant.merchant_key
+
+relationship dim_date_fct_monthly_spend
+	fromColumn: fct_monthly_spend.month_start
+	toColumn: dim_date.date_key
+
+relationship dim_category_fct_monthly_spend
+	fromColumn: fct_monthly_spend.category_key
+	toColumn: dim_category.category_key
+
+relationship dim_date_budget_variance
+	fromColumn: budget_variance.month_start
+	toColumn: dim_date.date_key
+
+relationship dim_category_budget_variance
+	fromColumn: budget_variance.category_key
+	toColumn: dim_category.category_key
+
+annotation PBI_QueryOrder = ["ServerParam","DatabaseParam","dim_date","dim_category","dim_merchant","fct_transactions","fct_monthly_spend","budget_variance"]

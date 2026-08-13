@@ -1,0 +1,65 @@
+/// Normalized payees. "Starbucks #4412" and "STARBUCKS COFFEE" collapse onto
+/// one row upstream, so this slices cleanly.
+table dim_merchant
+	lineageTag: a1b2c3d4-3333-4a03-9e33-000000000001
+
+	column user_id
+		dataType: int64
+		formatString: 0
+		isHidden
+		lineageTag: a1b2c3d4-3333-4a03-9e33-000000000002
+		summarizeBy: none
+		sourceColumn: user_id
+
+	column merchant_key
+		dataType: string
+		lineageTag: a1b2c3d4-3333-4a03-9e33-000000000003
+		summarizeBy: none
+		sourceColumn: merchant_key
+		isKey
+
+	column merchant_name
+		dataType: string
+		lineageTag: a1b2c3d4-3333-4a03-9e33-000000000004
+		summarizeBy: none
+		sourceColumn: merchant_name
+
+	/// Set when the user corrected this merchant's category; later
+	/// transactions for it skip the model entirely.
+	column pinned_category
+		dataType: string
+		lineageTag: a1b2c3d4-3333-4a03-9e33-000000000005
+		summarizeBy: none
+		sourceColumn: pinned_category
+
+	column transaction_count
+		dataType: int64
+		formatString: #,0
+		lineageTag: a1b2c3d4-3333-4a03-9e33-000000000006
+		summarizeBy: sum
+		sourceColumn: transaction_count
+
+	column total_spend
+		dataType: decimal
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		lineageTag: a1b2c3d4-3333-4a03-9e33-000000000007
+		summarizeBy: sum
+		sourceColumn: total_spend
+
+	column avg_transaction
+		dataType: decimal
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		lineageTag: a1b2c3d4-3333-4a03-9e33-000000000008
+		summarizeBy: none
+		sourceColumn: avg_transaction
+
+	partition dim_merchant = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database(ServerParam, DatabaseParam),
+				    Data = Source{[Schema="public", Item="vw_powerbi_dim_merchant"]}[Data]
+				in
+				    Data
+
+	annotation PBI_ResultType = Table

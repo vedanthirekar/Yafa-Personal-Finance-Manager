@@ -1,0 +1,108 @@
+/// Contiguous calendar spanning the transaction data. Marked as the model's
+/// date table, which is what makes time-intelligence DAX (MoM, YTD) valid.
+table dim_date
+	lineageTag: a1b2c3d4-1111-4a01-9e11-000000000001
+	dataCategory: Time
+
+	column date_key
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: a1b2c3d4-1111-4a01-9e11-000000000002
+		summarizeBy: none
+		sourceColumn: date_key
+		isKey
+
+		annotation SummarizationSetBy = Automatic
+
+	column year
+		dataType: int64
+		formatString: 0
+		lineageTag: a1b2c3d4-1111-4a01-9e11-000000000003
+		summarizeBy: none
+		sourceColumn: year
+
+		annotation SummarizationSetBy = User
+
+	column quarter_number
+		dataType: int64
+		formatString: 0
+		isHidden
+		lineageTag: a1b2c3d4-1111-4a01-9e11-000000000004
+		summarizeBy: none
+		sourceColumn: quarter_number
+
+	column quarter
+		dataType: string
+		lineageTag: a1b2c3d4-1111-4a01-9e11-000000000005
+		summarizeBy: none
+		sourceColumn: quarter
+		sortByColumn: quarter_number
+
+	column month_number
+		dataType: int64
+		formatString: 0
+		isHidden
+		lineageTag: a1b2c3d4-1111-4a01-9e11-000000000006
+		summarizeBy: none
+		sourceColumn: month_number
+
+	/// Sorted by month_number so charts read Jan..Dec rather than alphabetically.
+	column month_name
+		dataType: string
+		lineageTag: a1b2c3d4-1111-4a01-9e11-000000000007
+		summarizeBy: none
+		sourceColumn: month_name
+		sortByColumn: month_number
+
+	column year_month
+		dataType: string
+		lineageTag: a1b2c3d4-1111-4a01-9e11-000000000008
+		summarizeBy: none
+		sourceColumn: year_month
+
+	column month_start
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: a1b2c3d4-1111-4a01-9e11-000000000009
+		summarizeBy: none
+		sourceColumn: month_start
+
+	column day_of_month
+		dataType: int64
+		formatString: 0
+		lineageTag: a1b2c3d4-1111-4a01-9e11-00000000000a
+		summarizeBy: none
+		sourceColumn: day_of_month
+
+	column day_of_week_number
+		dataType: int64
+		formatString: 0
+		isHidden
+		lineageTag: a1b2c3d4-1111-4a01-9e11-00000000000b
+		summarizeBy: none
+		sourceColumn: day_of_week_number
+
+	column day_name
+		dataType: string
+		lineageTag: a1b2c3d4-1111-4a01-9e11-00000000000c
+		summarizeBy: none
+		sourceColumn: day_name
+		sortByColumn: day_of_week_number
+
+	column is_weekend
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: a1b2c3d4-1111-4a01-9e11-00000000000d
+		summarizeBy: none
+		sourceColumn: is_weekend
+
+	partition dim_date = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database(ServerParam, DatabaseParam),
+				    Data = Source{[Schema="public", Item="vw_powerbi_dim_date"]}[Data]
+				in
+				    Data
+
+	annotation PBI_ResultType = Table

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "YAFA"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "8f2b1c40-6d3a-4e91-9c77-3a0b5e21d4f1"
+  }
+}
