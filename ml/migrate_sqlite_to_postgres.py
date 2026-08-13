@@ -41,6 +41,11 @@ from app.models import Transaction, TransactionSource, User
 # carry throwaway accounts into a fresh database for no reason.
 SKIP_USERNAMES = {"verify_test_user", "example"}
 
+# "demo" is reserved: /auth/demo-login wipes and reseeds that account on every
+# login, so anything migrated into it is destroyed the first time someone
+# clicks "Try Demo". Historical rows go to a parallel account instead.
+USERNAME_REMAP = {"demo": "demo_legacy"}
+
 
 def _parse_date(raw: str | date | None) -> date | None:
     if raw is None:
@@ -59,6 +64,7 @@ def _parse_date(raw: str | date | None) -> date | None:
 async def _get_or_create_user(session, username: str, **defaults) -> User:  # type: ignore[no-untyped-def]
     # Trailing whitespace is real in this data -- there is a "Vedant " row.
     username = username.strip()
+    username = USERNAME_REMAP.get(username, username)
     user = await session.scalar(select(User).where(User.username == username))
     if user is not None:
         return user
