@@ -59,7 +59,9 @@ CURRENCY_TOKENS: dict[str, str] = {
 _SYMBOLS = r"[$₹€£]"
 _CURRENCY_WORDS = "|".join(
     re.escape(word)
-    for word in sorted((w for w in CURRENCY_TOKENS if not re.match(_SYMBOLS, w)), key=len, reverse=True)
+    for word in sorted(
+        (w for w in CURRENCY_TOKENS if not re.match(_SYMBOLS, w)), key=len, reverse=True
+    )
 )
 
 # --------------------------------------------------------------------------
@@ -116,9 +118,25 @@ _BARE_WORDS_AMOUNT_RE = re.compile(
 
 _TENS_WORDS = {"twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"}
 _UNIT_WORDS = {
-    "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
-    "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen",
-    "eighteen", "nineteen",
+    "one",
+    "two",
+    "three",
+    "four",
+    "five",
+    "six",
+    "seven",
+    "eight",
+    "nine",
+    "ten",
+    "eleven",
+    "twelve",
+    "thirteen",
+    "fourteen",
+    "fifteen",
+    "sixteen",
+    "seventeen",
+    "eighteen",
+    "nineteen",
 }
 
 
@@ -151,6 +169,7 @@ def _parse_spoken_amount(phrase: str) -> Decimal | None:
     except ValueError:
         return None
 
+
 # --------------------------------------------------------------------------
 # description / merchant cleanup
 # --------------------------------------------------------------------------
@@ -158,7 +177,9 @@ def _parse_spoken_amount(phrase: str) -> Decimal | None:
 _MERCHANT_RE = re.compile(
     r"\b(?:at|from|to|in)\s+((?:[A-Z][\w'&-]*|[a-z][\w'&-]*)(?:\s+[A-Z][\w'&-]*)*)",
 )
-_FILLER_LEAD_RE = re.compile(r"^\s*(i\s+)?(just\s+)?(spent|spend|paid|pay|bought|buy)\b\s*", re.IGNORECASE)
+_FILLER_LEAD_RE = re.compile(
+    r"^\s*(i\s+)?(just\s+)?(spent|spend|paid|pay|bought|buy)\b\s*", re.IGNORECASE
+)
 _FILLER_TRAIL_RE = re.compile(
     r"[\s,]+(on|for|and|at|from|about|around|roughly|approximately)\s*$", re.IGNORECASE
 )
@@ -170,8 +191,13 @@ _STRAY_CURRENCY_RE = re.compile(rf"\b({_CURRENCY_WORDS}|cents?)\b|{_SYMBOLS}", r
 # --------------------------------------------------------------------------
 
 _WEEKDAYS = {
-    "monday": 0, "tuesday": 1, "wednesday": 2, "thursday": 3,
-    "friday": 4, "saturday": 5, "sunday": 6,
+    "monday": 0,
+    "tuesday": 1,
+    "wednesday": 2,
+    "thursday": 3,
+    "friday": 4,
+    "saturday": 5,
+    "sunday": 6,
 }
 _RELATIVE_DATE_RE = re.compile(
     r"\b(today|yesterday|last\s+night|this\s+morning|"
@@ -199,7 +225,9 @@ def _to_decimal(raw: str) -> Decimal | None:
         return None
 
 
-def extract_amount(text: str, default_currency: str) -> tuple[Decimal | None, str, tuple[int, int] | None, ExtractionMethod]:
+def extract_amount(
+    text: str, default_currency: str
+) -> tuple[Decimal | None, str, tuple[int, int] | None, ExtractionMethod]:
     """Return ``(amount, currency, matched span, method)``.
 
     Tries digit+currency patterns, then spelled-out numbers, then a bare
@@ -308,7 +336,9 @@ def clean_description(text: str, *spans: tuple[int, int] | None) -> str:
     return text.strip(" .,!?;:-")
 
 
-def extract(transcript: str, default_currency: str = "USD", today: date | None = None) -> Extraction:
+def extract(
+    transcript: str, default_currency: str = "USD", today: date | None = None
+) -> Extraction:
     """Full deterministic pass over a transcript."""
     amount, currency, amount_span, method = extract_amount(transcript, default_currency)
     merchant, _merchant_span = extract_merchant(transcript)

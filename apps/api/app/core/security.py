@@ -98,9 +98,7 @@ def create_access_token(username: str) -> str:
 
 
 def create_refresh_token(username: str) -> str:
-    return _create_token(
-        username, "refresh", timedelta(days=settings.refresh_token_expire_days)
-    )
+    return _create_token(username, "refresh", timedelta(days=settings.refresh_token_expire_days))
 
 
 class TokenError(Exception):

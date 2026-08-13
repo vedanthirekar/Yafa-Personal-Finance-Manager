@@ -68,7 +68,13 @@ class TestExtractAmount:
             ("I paid Rs 250 for the taxi", "USD", Decimal(250), "INR", ExtractionMethod.REGEX),
             ("₹1200 for the electricity bill", "USD", Decimal(1200), "INR", ExtractionMethod.REGEX),
             # Spelled out, with and without a currency word.
-            ("twenty five euros at the pharmacy", "USD", Decimal(25), "EUR", ExtractionMethod.WORDS),
+            (
+                "twenty five euros at the pharmacy",
+                "USD",
+                Decimal(25),
+                "EUR",
+                ExtractionMethod.WORDS,
+            ),
             (
                 "I spent twelve fifty at Starbucks",
                 "USD",
@@ -94,7 +100,7 @@ class TestExtractAmount:
         assert got_method == method
 
     def test_unanchored_count_is_not_an_amount(self) -> None:
-        """"2 coffees" is a quantity, not a price -- guessing here is worse
+        """ "2 coffees" is a quantity, not a price -- guessing here is worse
         than returning nothing and letting the LLM layer or the user decide."""
         amount, _currency, _span, method = extract_amount("2 coffees this morning", "USD")
         assert amount is None

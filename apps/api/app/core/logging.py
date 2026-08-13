@@ -64,7 +64,9 @@ def configure_telemetry(app: object, settings: Settings) -> None:
     from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
     provider = TracerProvider(
-        resource=Resource.create({"service.name": "yafa-api", "deployment.environment": settings.environment})
+        resource=Resource.create(
+            {"service.name": "yafa-api", "deployment.environment": settings.environment}
+        )
     )
     provider.add_span_processor(
         BatchSpanProcessor(OTLPSpanExporter(endpoint=f"{settings.otel_endpoint}/v1/traces"))

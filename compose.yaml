@@ -1,6 +1,10 @@
 # Full local stack. From the repo root:
 #   cp .env.example .env    # then set YAFA_JWT_SECRET
-#   docker compose -f infra/docker-compose.yml up --build
+#   docker compose up --build
+#
+# This lives at the repo root rather than under infra/ so Docker Compose finds
+# .env and resolves build contexts without extra flags. The Dockerfiles stay
+# in infra/.
 #
 # Every service has a healthcheck and the API waits on all three backing
 # stores, so `up` either reaches a working system or fails loudly -- it never
@@ -58,7 +62,7 @@ services:
 
   api:
     build:
-      context: ..
+      context: .
       dockerfile: infra/api.Dockerfile
     environment:
       YAFA_DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-yafa}:${POSTGRES_PASSWORD:-yafa}@postgres:5432/${POSTGRES_DB:-yafa}
@@ -75,7 +79,7 @@ services:
       - "8000:8000"
     volumes:
       - model_cache:/models
-      - ../data:/app/data:ro
+      - ./data:/app/data:ro
     depends_on:
       postgres:
         condition: service_healthy
@@ -92,7 +96,7 @@ services:
 
   web:
     build:
-      context: ../apps/web
+      context: ./apps/web
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_API_URL: http://localhost:8000

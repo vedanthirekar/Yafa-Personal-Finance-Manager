@@ -181,7 +181,8 @@ async def categorize(
     # Runners-up let the UI offer one-tap corrections instead of a dropdown
     # of every category.
     alternatives = [
-        CategoryScore(category=category, confidence=score / total) for category, score in ranked[1:4]
+        CategoryScore(category=category, confidence=score / total)
+        for category, score in ranked[1:4]
     ]
     return best_category, best_score / total, alternatives
 

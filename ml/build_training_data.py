@@ -5,7 +5,7 @@ descriptions), remapped down to the 10 canonical categories used across the
 app's UI.
 
 Run from the repo root:
-    python -m backend.scripts.build_training_data
+    uv run python -m ml.build_training_data
 """
 
 import random
@@ -14,7 +14,7 @@ from pathlib import Path
 
 import pandas as pd
 
-DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data"
+DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
 # Judgment calls, documented here rather than hidden: `gift` reads as a social
 # occasion, so it folds into Social Life; `apparel` reads as a household
@@ -75,9 +75,7 @@ def load_categories_csv() -> pd.DataFrame:
     df = df.rename(columns={"words": "keyword"})
 
     rng = random.Random(42)
-    df["text"] = df["keyword"].apply(
-        lambda kw: rng.choice(_KEYWORD_TEMPLATES).format(kw=kw)
-    )
+    df["text"] = df["keyword"].apply(lambda kw: rng.choice(_KEYWORD_TEMPLATES).format(kw=kw))
     return df[["text", "category"]]
 
 
@@ -90,9 +88,7 @@ def load_sample_data_csv() -> pd.DataFrame:
 
 
 def build() -> pd.DataFrame:
-    combined = pd.concat(
-        [load_categories_csv(), load_sample_data_csv()], ignore_index=True
-    )
+    combined = pd.concat([load_categories_csv(), load_sample_data_csv()], ignore_index=True)
     # Drop missing text *before* stringifying -- otherwise a real NaN becomes
     # the literal string "nan", which then round-trips back into a float NaN
     # the next time this CSV is read (pandas' default na_values includes "nan"),

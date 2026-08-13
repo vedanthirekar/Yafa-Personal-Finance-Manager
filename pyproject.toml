@@ -118,7 +118,9 @@ src = ["apps/api", "ml"]
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "UP", "B", "C4", "SIM", "RUF"]
 ignore = [
-    "B008", # FastAPI's Depends() in defaults is the documented idiom
+    "B008",   # FastAPI's Depends() in defaults is the documented idiom
+    "SIM102", # collapsing the nested ifs would put two walrus assignments in
+              # one condition, which reads worse than the nesting it removes
 ]
 
 [tool.mypy]

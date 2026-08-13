@@ -28,9 +28,7 @@ class ExtractedTransaction(BaseModel):
     amount: Decimal | None = Field(
         default=None, description="Transaction amount as a positive decimal number"
     )
-    currency: str = Field(
-        default="USD", description="ISO 4217 currency code, e.g. USD, INR, EUR"
-    )
+    currency: str = Field(default="USD", description="ISO 4217 currency code, e.g. USD, INR, EUR")
     merchant: str | None = Field(
         default=None, description="Payee or store name, if one was mentioned"
     )

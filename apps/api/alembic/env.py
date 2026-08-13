@@ -7,8 +7,9 @@ the sync path keeps this file about half the size.
 
 from logging.config import fileConfig
 
-from alembic import context
 from sqlalchemy import engine_from_config, pool
+
+from alembic import context
 
 # Importing the models package registers every table on Base.metadata.
 # Without this import autogenerate produces an empty migration.
