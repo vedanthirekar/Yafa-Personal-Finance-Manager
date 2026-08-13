@@ -1,0 +1,111 @@
+# Full local stack. From the repo root:
+#   cp .env.example .env    # then set YAFA_JWT_SECRET
+#   docker compose -f infra/docker-compose.yml up --build
+#
+# Every service has a healthcheck and the API waits on all three backing
+# stores, so `up` either reaches a working system or fails loudly -- it never
+# leaves you with an API retrying against a database that isn't listening.
+
+name: yafa
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-yafa}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-yafa}
+      POSTGRES_DB: ${POSTGRES_DB:-yafa}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-yafa} -d ${POSTGRES_DB:-yafa}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Runs as a service rather than the embedded local-mode client. The embedded
+  # client held an exclusive file lock, which meant reseeding the collection
+  # required stopping the API first.
+  qdrant:
+    image: qdrant/qdrant:v1.13.4
+    ports:
+      - "6333:6333"  # REST
+      - "6334:6334"  # gRPC
+    volumes:
+      - qdrant_data:/qdrant/storage
+    healthcheck:
+      # The image is distroless -- no curl, no wget. Bash's /dev/tcp is the
+      # portable way to check the port is actually accepting connections.
+      test: ["CMD-SHELL", "bash -c ':> /dev/tcp/127.0.0.1/6333' || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --save 60 1 --loglevel warning
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build:
+      context: ..
+      dockerfile: infra/api.Dockerfile
+    environment:
+      YAFA_DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-yafa}:${POSTGRES_PASSWORD:-yafa}@postgres:5432/${POSTGRES_DB:-yafa}
+      YAFA_QDRANT_URL: http://qdrant:6333
+      YAFA_REDIS_URL: redis://redis:6379/0
+      YAFA_JWT_SECRET: ${YAFA_JWT_SECRET:?set YAFA_JWT_SECRET in .env -- the API refuses to boot without one}
+      YAFA_CORS_ORIGINS: '["http://localhost:3000"]'
+      YAFA_ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      YAFA_ENVIRONMENT: dev
+      # Model weights land here; the named volume keeps them across rebuilds
+      # instead of re-downloading ~500MB every time.
+      HF_HOME: /models
+    ports:
+      - "8000:8000"
+    volumes:
+      - model_cache:/models
+      - ../data:/app/data:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/health').status==200 else 1)"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 90s  # first boot downloads the embedding + whisper models
+
+  web:
+    build:
+      context: ../apps/web
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:8000
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  qdrant_data:
+  redis_data:
+  model_cache:

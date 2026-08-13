@@ -1,8 +1,49 @@
-.env/
+# --- secrets ---------------------------------------------------------------
 .env
-__pycache__
-database.csv
-audio.wav
-backend/yafa.db
+.env.local
+.env.*.local
+
+# --- python ----------------------------------------------------------------
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+
+# --- node / next -----------------------------------------------------------
+node_modules/
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+
+# --- local data ------------------------------------------------------------
+# Superseded by Postgres; kept out of the repo so nobody accidentally
+# resurrects the SQLite era.
+*.db
 backend/qdrant_data/
 data/qdrant_eval_tmp/
+audio.wav
+
+# Model weights are downloaded on first run, not committed.
+models/
+.cache/
+
+# --- power bi --------------------------------------------------------------
+# PBIP is checked in as text; these are the local caches Power BI Desktop
+# writes alongside it.
+*.pbix
+.pbi/
+**/.pbi/localSettings.json
+
+# --- os / editor -----------------------------------------------------------
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json

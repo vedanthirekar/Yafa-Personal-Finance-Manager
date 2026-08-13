@@ -1,0 +1,151 @@
+[project]
+name = "yafa"
+version = "2.0.0"
+description = "AI-powered expense tracker: voice capture, semantic categorization, spend forecasting"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+
+# Runtime deps for the API service. Everything is pinned with a lower bound and
+# a compatible-release upper bound so `uv lock` stays reproducible without
+# freezing us out of patch releases.
+dependencies = [
+    # web
+    "fastapi>=0.135,<0.136",
+    "uvicorn[standard]>=0.40,<0.41",
+    "python-multipart>=0.0.20,<0.1",
+    "websockets>=15.0,<16.0",
+    # data
+    "sqlalchemy[asyncio]>=2.0.51,<2.1",
+    "asyncpg>=0.30,<0.31",
+    # Blocking driver, used only by Alembic and the one-off SQLite migration
+    # script -- both of which predate the event loop and can't use asyncpg.
+    "psycopg[binary]>=3.2,<4.0",
+    "alembic>=1.16,<1.17",
+    # validation / config
+    "pydantic[email]>=2.11,<3.0",
+    "pydantic-settings>=2.8,<3.0",
+    # auth
+    "argon2-cffi>=25.1,<26.0",
+    "pyjwt>=2.10,<3.0",
+    # infra
+    "redis[hiredis]>=6.0,<7.0",
+    # observability
+    "structlog>=25.1,<26.0",
+    "opentelemetry-sdk>=1.31,<2.0",
+    "opentelemetry-instrumentation-fastapi>=0.52b0",
+    "opentelemetry-instrumentation-sqlalchemy>=0.52b0",
+    "opentelemetry-exporter-otlp-proto-http>=1.31,<2.0",
+    "prometheus-fastapi-instrumentator>=7.1,<8.0",
+    # ml inference (needed at request time, so not optional)
+    "sentence-transformers>=3.4,<6.0",
+    "qdrant-client>=1.13,<2.0",
+    "faster-whisper>=1.1,<2.0",
+    "statsmodels>=0.14,<0.15",
+    "pandas>=2.2,<3.0",
+    "numpy>=1.26,<3.0",
+    # transcript -> structured transaction fallback
+    "anthropic>=0.69",
+    # legacy amount extraction (word2number powers the spelled-out-number path)
+    "word2number>=1.1,<2.0",
+]
+
+[project.optional-dependencies]
+# GPU wheels. Default install pulls CPU torch from PyPI, which is what the
+# Docker image uses. Install this extra locally to run Whisper/BERT on CUDA:
+#   uv sync --extra gpu
+gpu = [
+    "torch>=2.6",
+]
+
+[dependency-groups]
+# Offline work: corpus building, evaluation, UMAP projection for Power BI.
+# Not installed in the API image.
+ml = [
+    "scikit-learn>=1.6,<2.0",
+    "umap-learn>=0.5.7,<0.6",
+    "matplotlib>=3.10,<4.0",
+]
+dev = [
+    "pytest>=8.3,<9.0",
+    "pytest-asyncio>=0.25,<1.2",
+    "pytest-cov>=6.0,<8.0",
+    "httpx>=0.28,<0.29",
+    "ruff>=0.9,<0.15",
+    "mypy>=1.15,<2.0",
+    "types-redis>=4.6,<5.0",
+    "pandas-stubs>=2.2,<3.0",
+]
+
+# ---------------------------------------------------------------------------
+# uv
+# ---------------------------------------------------------------------------
+
+[tool.uv]
+default-groups = ["dev"]
+
+# CUDA wheels are only reachable from PyTorch's own index, and `explicit = true`
+# keeps uv from searching it for anything except torch.
+[[tool.uv.index]]
+name = "pytorch-cu124"
+url = "https://download.pytorch.org/whl/cu124"
+explicit = true
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cu124", extra = "gpu" }]
+
+# ---------------------------------------------------------------------------
+# build
+# ---------------------------------------------------------------------------
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+# Two importable packages live outside the repo root, so point hatch at both.
+# This is what makes `import app` and `import ml` work after `uv sync`.
+[tool.hatch.build.targets.wheel]
+packages = ["apps/api/app", "ml"]
+
+# ---------------------------------------------------------------------------
+# tooling
+# ---------------------------------------------------------------------------
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["apps/api", "ml"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "B", "C4", "SIM", "RUF"]
+ignore = [
+    "B008", # FastAPI's Depends() in defaults is the documented idiom
+]
+
+[tool.mypy]
+python_version = "3.12"
+plugins = ["pydantic.mypy"]
+mypy_path = "apps/api"
+warn_unused_ignores = true
+warn_redundant_casts = true
+disallow_untyped_defs = true
+
+# Third-party packages without bundled type hints.
+[[tool.mypy.overrides]]
+module = [
+    "faster_whisper.*",
+    "sentence_transformers.*",
+    "qdrant_client.*",
+    "statsmodels.*",
+    "word2number.*",
+    "umap.*",
+]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["apps/api/tests"]
+pythonpath = ["apps/api"]
+asyncio_mode = "auto"
+addopts = "-q --strict-markers"
+markers = [
+    "integration: requires the docker-compose stack (postgres + qdrant)",
+]
