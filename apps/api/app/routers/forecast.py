@@ -16,10 +16,10 @@ async def forecast_me(
 ) -> ForecastResponse:
     """Forecast the user's monthly spend, overall and per category.
 
-    Every series carries ``model`` and ``is_fitted`` so the client can say
-    which projections are real ARIMA fits and which are a flat mean baseline
-    standing in for insufficient history -- rather than drawing both the same
-    way and implying equal confidence.
+    A series with fewer than ``months_required`` complete months comes back
+    with an empty ``forecast`` and ``is_fitted: false``, carrying
+    ``months_of_history`` so the client can say how much further the user has
+    to go. Nothing is invented to fill the gap.
     """
     df = await forecasting.load_transactions(db, current_user.id)
 

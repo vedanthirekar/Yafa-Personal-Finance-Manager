@@ -12,7 +12,7 @@ spending is heading.
 - **FastAPI** service, async throughout, with REST + WebSocket endpoints
 - **Semantic categorization** via BERT sentence embeddings and Qdrant vector search
 - **Voice capture** through `faster-whisper`, streamed live over a WebSocket
-- **Forecasting** with ARIMA, prediction intervals, and per-category anomaly detection
+- **Forecasting** with exponential smoothing, prediction intervals, and per-category anomaly detection
 - **Power BI** star schema and a checked-in, text-format semantic model
 - **Next.js 16** front end
 
@@ -113,22 +113,37 @@ distinguishable from the seed corpus so evaluation stays comparable.
 
 ### Forecasting
 
-Monthly ARIMA(5,1,0) with 80% prediction intervals, per-category series, and
-z-score anomaly detection scoped per category — a $400 rent month is normal, a
-$400 coffee month is not.
+Monthly **simple exponential smoothing** with 80% prediction intervals,
+per-category series, and z-score anomaly detection scoped per category — a $400
+rent month is normal, a $400 coffee month is not.
 
-Every series reports its `model` and `is_fitted`, so a mean baseline standing
-in for thin history is never drawn as though it were a real fit. Months with no
-spending are zero-filled, or ARIMA would treat non-adjacent months as
-consecutive.
+**The model was chosen by measurement, not by reputation.**
+`uv run python -m ml.eval_forecasting` backtests eight candidates against the
+real series — expanding window, one-step-ahead, scored against a naive "next
+month looks like last month" baseline. The previous ARIMA(5,1,0) placed **last
+of eight**, 45% worse than doing nothing, because it estimates five
+autoregressive coefficients from seventeen differenced points. Numbers and
+reasoning: [`docs/forecasting-notes.md`](docs/forecasting-notes.md).
 
-> **The forecaster is not good, and the repo can prove it.** Run
-> `uv run python -m ml.eval_forecasting` for a rolling-origin backtest against
-> seven baselines. ARIMA(5,1,0) currently places last of eight on the demo
-> account — 45% worse than simply repeating last month's total — and sixth of
-> eight on the imported historical data. Fixing it is deliberately out of scope
-> for this pass; the diagnosis and the plan are in
-> [`docs/forecasting-notes.md`](docs/forecasting-notes.md).
+Exponential smoothing is a weighted average of past months where recent months
+count more, and how much more is one parameter (α) fitted per account. That
+single parameter spans both methods that beat ARIMA in the backtest — α→1 is
+"last month repeats", α→0 is "the long-run average" — so the model adapts to
+each user with no per-user model selection or hardcoded window. It is also
+exactly ARIMA(0,1,1): same family as before, correct number of parameters.
+
+Three things the series does that a bare `.fit()` wouldn't:
+
+| | Why |
+|---|---|
+| **Under 6 months → no forecast at all** | `months_of_history` and `months_required` come back instead, and the UI counts down. Below that α is fitted to three or four points and the interval built from it means nothing. The old build showed a flat mean here and called it a projection. |
+| **The current month is excluded from the fit** | The newest bucket is only as complete as today's date. Smoothing weights the latest observation most heavily, so a half-finished month reads as a collapse in spending — and it's the point the model trusts most. It stays in `history` for the chart. |
+| **Six-plus empty months = dormancy, and everything before it is dropped** | Gaps are zero-filled so non-adjacent months aren't treated as consecutive — right for a quiet month, wrong for a year off. The imported historical account has an 18-month hole; including it widened the 80% band to 8.4× the forecast. Trimming to the current era brought that to 1.9×. |
+
+Intervals come from the closed-form ETS(A,N,N) variance, `σ²[1 + (h−1)α²]`
+(Hyndman & Athanasopoulos §7.7). They are still wide — roughly 1.5× the
+forecast on the demo account — because monthly spending genuinely varies that
+much. No model shrinks that; the honest move is to show it.
 
 ### The interface
 
@@ -160,7 +175,7 @@ apps/
       services/   categorizer, speech, nlp_extract, llm_extract, pipeline,
                   forecasting, demo_seed
     alembic/      migrations
-    tests/        90 tests
+    tests/        102 tests
   web/            Next.js 16 + Tailwind v4 + TanStack Query + Recharts
                   routes: / (landing) · /login · /record · /transactions · /insights
 ml/               corpus building, Qdrant seeding, evaluation, SQLite migration
@@ -172,7 +187,7 @@ compose.yaml      postgres · qdrant · redis · api · web
 ## Commands
 
 ```sh
-uv run pytest apps/api/tests            # 90 tests; integration ones skip if the stack is down
+uv run pytest apps/api/tests            # 102 tests; integration ones skip if the stack is down
 uv run ruff check apps/api ml
 uv run mypy apps/api/app
 

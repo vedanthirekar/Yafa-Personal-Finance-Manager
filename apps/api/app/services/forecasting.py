@@ -1,23 +1,39 @@
 """Monthly spend forecasting and anomaly detection.
 
-Kept behind a small interface so the model can be swapped (statsforecast's
-AutoETS/MSTL are the obvious next step) without touching routers.
+The forecaster is **simple exponential smoothing** -- one method, the same one
+for every account. See ``docs/forecasting-notes.md`` for the backtest that
+chose it.
 
-The previous implementation wrapped the fit in a bare ``except Exception:
-return None``, so an under-specified model, a singular matrix, and a genuine
-bug all produced the same silent null. Here, "not enough history" is an
-explicit, reported state, and unexpected failures are logged.
+Why this and not something more impressive: monthly household spending is
+close to a stable level plus noise, and on a rolling-origin backtest of eight
+candidates the simple methods won outright. The previous ARIMA(5,1,0) placed
+*last of eight* on an 18-month account -- 45% worse than just repeating last
+month's total -- because it estimates five autoregressive coefficients from
+seventeen differenced points and ends up fitting noise.
+
+Exponential smoothing is a weighted average of past months where recent months
+count more, and *how much* more is a single parameter (alpha) estimated from
+each user's own history. That one parameter spans both of the things that beat
+ARIMA in the backtest:
+
+    alpha -> 1    "next month looks like last month"      (won on 75 months)
+    alpha -> 0    "next month looks like the long average" (won on 18 months)
+
+So the model adapts per account without any per-user model selection, branching,
+or hardcoded window. It is also exactly ARIMA(0,1,1) -- the same family as
+before, with the right number of parameters instead of five.
 """
 
 import warnings
 from datetime import date
 from decimal import Decimal
 
+import numpy as np
 import pandas as pd
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from statsmodels.tools.sm_exceptions import ConvergenceWarning
-from statsmodels.tsa.arima.model import ARIMA
+from statsmodels.tsa.holtwinters import SimpleExpSmoothing
 
 from ..core.logging import get_logger
 from ..models import Transaction
@@ -26,14 +42,32 @@ from ..schemas.forecast import Anomaly, ForecastPoint, ForecastSeries
 log = get_logger(__name__)
 
 FORECAST_STEPS = 6
-ARIMA_ORDER = (5, 1, 0)
-MODEL_NAME = f"ARIMA{ARIMA_ORDER}"
+MODEL_NAME = "exponential smoothing"
 
-# ARIMA(5,1,0) estimates 5 autoregressive terms on differenced data, so it
-# needs more than 6 points to be anything but overfitted noise.
-MIN_MONTHS_FOR_ARIMA = 8
-# Below that we still show something useful, just labelled honestly.
-MIN_MONTHS_FOR_MEAN = 2
+# Below this we don't forecast at all -- the client is told how many months it
+# has and how many it needs, and says so.
+#
+# Six is where the two estimated parameters (alpha and the initial level) stop
+# being guesses. Under that, alpha is essentially unidentifiable: the optimiser
+# will still return a number, but it is fitted to three or four points and the
+# prediction interval built from it means nothing. Showing a flat average and
+# calling it a projection -- which is what this used to do -- is worse than
+# saying "not yet".
+MIN_MONTHS_TO_FORECAST = 6
+
+# A run of this many consecutive empty months is read as dormancy -- the
+# account was abandoned and later picked back up -- and everything before it is
+# dropped from the fit.
+#
+# ``_to_monthly`` zero-fills gaps, which is right for one or two quiet months
+# inside an active stretch and badly wrong for a long absence: an account with
+# an 18-month hole teaches the model that spending collapsed to nothing for a
+# year and a half, which inflates the residual variance enormously and drags
+# the level down. The imported historical account has exactly that shape.
+DORMANCY_MONTHS = 6
+
+# Two-sided 80% normal quantile, for the prediction interval.
+Z_80 = 1.2815515655446004
 
 ANOMALY_Z_THRESHOLD = 2.0
 
@@ -64,7 +98,7 @@ def _to_monthly(df: pd.DataFrame) -> pd.Series:
     """Sum to calendar-month totals, filling gaps with zero.
 
     Without the reindex a month in which nothing was spent simply wouldn't
-    exist, and ARIMA would treat two non-adjacent months as consecutive.
+    exist, and the model would treat two non-adjacent months as consecutive.
     """
     if df.empty:
         return pd.Series(dtype="float64")
@@ -76,31 +110,79 @@ def _to_monthly(df: pd.DataFrame) -> pd.Series:
     return monthly
 
 
-def _mean_forecast(monthly: pd.Series, steps: int) -> tuple[list[ForecastPoint], str, bool]:
-    """Flat mean projection, for when there isn't enough history to fit."""
+def _drop_partial_month(monthly: pd.Series, today: date | None = None) -> pd.Series:
+    """Drop a trailing point for the month we're currently living through.
+
+    The newest bucket is only as complete as today's date. Fitting on it teaches
+    the model that spending just fell off a cliff -- on the 14th of the month it
+    looks like a ~50% drop -- and since exponential smoothing weights the most
+    recent observation most heavily, that is exactly the point it trusts most.
+
+    The partial month stays in ``history`` for the chart; it is only excluded
+    from the fit.
+    """
     if monthly.empty:
-        return [], "insufficient-history", False
+        return monthly
 
-    mean = float(monthly.mean())
-    std = float(monthly.std()) if len(monthly) > 1 else 0.0
-    future = pd.date_range(start=monthly.index[-1], periods=steps + 1, freq="ME")[1:]
+    now = today or date.today()
+    last = monthly.index[-1]
+    if last.year == now.year and last.month == now.month:
+        return monthly.iloc[:-1]
+    return monthly
 
-    points = [
-        ForecastPoint(
-            date=stamp.date(),
-            amount=Decimal(str(round(mean, 2))),
-            lower=Decimal(str(round(max(mean - std, 0.0), 2))),
-            upper=Decimal(str(round(mean + std, 2))),
-        )
-        for stamp in future
-    ]
-    return points, "mean-baseline", False
+
+def _recent_era(monthly: pd.Series) -> pd.Series:
+    """Keep only what follows the most recent long stretch of empty months.
+
+    A genuine zero-spend month is rare; six in a row is not a spending pattern,
+    it's an absence. Whatever the account looked like before it came back is a
+    different regime and shouldn't inform the forecast.
+
+    A filled zero and a real zero are indistinguishable by this point, which is
+    fine -- six consecutive months of spending exactly nothing is dormancy
+    either way.
+    """
+    if monthly.empty:
+        return monthly
+
+    values = monthly.to_numpy(dtype=float)
+    run = 0
+    cut = 0
+    for i, value in enumerate(values):
+        if value == 0.0:
+            run += 1
+            if run >= DORMANCY_MONTHS:
+                # Keep advancing while the gap continues, so `cut` lands on the
+                # first active month after it rather than mid-gap.
+                cut = i + 1
+        else:
+            run = 0
+    return monthly.iloc[cut:]
+
+
+def _empty_series(
+    category: str | None, history: list[ForecastPoint], months: int, model: str
+) -> ForecastSeries:
+    return ForecastSeries(
+        category=category,
+        history=history,
+        forecast=[],
+        model=model,
+        is_fitted=False,
+        months_of_history=months,
+        months_required=MIN_MONTHS_TO_FORECAST,
+    )
 
 
 def forecast_series(
     df: pd.DataFrame, *, category: str | None = None, steps: int = FORECAST_STEPS
 ) -> ForecastSeries:
-    """Forecast monthly spend, with prediction intervals where available."""
+    """Forecast monthly spend with an 80% prediction interval.
+
+    Returns an unfitted series with ``months_of_history`` / ``months_required``
+    when there isn't enough history yet, so the client can say how far off the
+    user is rather than drawing a line nobody should trust.
+    """
     monthly = _to_monthly(df)
 
     history = [
@@ -108,24 +190,9 @@ def forecast_series(
         for stamp, value in monthly.items()
     ]
 
-    if len(monthly) < MIN_MONTHS_FOR_MEAN:
-        return ForecastSeries(
-            category=category,
-            history=history,
-            forecast=[],
-            model="insufficient-history",
-            is_fitted=False,
-        )
-
-    if len(monthly) < MIN_MONTHS_FOR_ARIMA:
-        points, model_name, fitted = _mean_forecast(monthly, steps)
-        return ForecastSeries(
-            category=category,
-            history=history,
-            forecast=points,
-            model=model_name,
-            is_fitted=fitted,
-        )
+    fitting = _recent_era(_drop_partial_month(monthly))
+    if len(fitting) < MIN_MONTHS_TO_FORECAST:
+        return _empty_series(category, history, len(fitting), "not-enough-history")
 
     try:
         with warnings.catch_warnings():
@@ -133,52 +200,71 @@ def forecast_series(
             # and would otherwise flood the logs on every request.
             warnings.simplefilter("ignore", ConvergenceWarning)
             warnings.simplefilter("ignore", UserWarning)
-            fit = ARIMA(monthly, order=ARIMA_ORDER).fit()
+            fit = SimpleExpSmoothing(
+                fitting.to_numpy(dtype=float), initialization_method="estimated"
+            ).fit(optimized=True)
 
-        prediction = fit.get_forecast(steps=steps)
-        mean = prediction.predicted_mean
-        intervals = prediction.conf_int(alpha=0.20)  # 80% band
+        alpha = float(fit.params["smoothing_level"])
+
+        # Exponential smoothing forecasts a flat line: every horizon gets the
+        # same point estimate. The interval is what widens.
+        point = float(fit.forecast(1)[0])
+
+        # Residual scale, with a degree of freedom taken back for each of the
+        # two estimated parameters (alpha, initial level).
+        n = len(fitting)
+        sigma = float(np.sqrt(fit.sse / max(n - 2, 1)))
+
+        # ETS(A,N,N) h-step variance: sigma^2 * [1 + (h-1) * alpha^2].
+        # Hyndman & Athanasopoulos, *Forecasting: Principles and Practice*,
+        # 3rd ed. §7.7. Derived from the model rather than bootstrapped, which
+        # matters here -- there is not enough history to bootstrap from.
+        if not np.isfinite(point) or not np.isfinite(sigma) or not np.isfinite(alpha):
+            raise ValueError("smoothing produced a non-finite fit")
+
+        # Anchored to the *full* series, not the fitted one. The partial
+        # current month is excluded from the fit but it has still happened --
+        # starting the horizon after `fitting` would emit a "forecast" for a
+        # month already sitting in `history`, and the chart would draw August
+        # twice with two different numbers.
         future = pd.date_range(start=monthly.index[-1], periods=steps + 1, freq="ME")[1:]
 
-        points = [
-            ForecastPoint(
-                date=stamp.date(),
-                # Spend can't be negative; ARIMA on a short series can project
-                # below zero, which is a modelling artifact, not a prediction.
-                amount=Decimal(str(round(max(float(value), 0.0), 2))),
-                lower=Decimal(str(round(max(float(low), 0.0), 2))),
-                upper=Decimal(str(round(max(float(high), 0.0), 2))),
+        points: list[ForecastPoint] = []
+        for horizon, stamp in enumerate(future, start=1):
+            half = Z_80 * sigma * float(np.sqrt(1.0 + (horizon - 1) * alpha**2))
+            points.append(
+                ForecastPoint(
+                    date=stamp.date(),
+                    # Spend can't be negative, so the band is clipped rather
+                    # than shown crossing zero.
+                    amount=Decimal(str(round(max(point, 0.0), 2))),
+                    lower=Decimal(str(round(max(point - half, 0.0), 2))),
+                    upper=Decimal(str(round(max(point + half, 0.0), 2))),
+                )
             )
-            for stamp, value, low, high in zip(
-                future, mean, intervals.iloc[:, 0], intervals.iloc[:, 1], strict=False
-            )
-        ]
+
         return ForecastSeries(
             category=category,
             history=history,
             forecast=points,
             model=MODEL_NAME,
             is_fitted=True,
+            months_of_history=len(fitting),
+            months_required=MIN_MONTHS_TO_FORECAST,
+            smoothing_level=round(alpha, 4),
         )
 
     except Exception as exc:
-        # Genuinely unexpected: log it, then degrade to the baseline rather
-        # than returning nothing at all.
+        # Genuinely unexpected: log it, then report the series as unfitted
+        # rather than inventing a projection to fill the gap.
         log.warning(
-            "forecast.arima_failed",
+            "forecast.smoothing_failed",
             category=category,
-            months=len(monthly),
+            months=len(fitting),
             error=str(exc),
             error_type=type(exc).__name__,
         )
-        points, model_name, fitted = _mean_forecast(monthly, steps)
-        return ForecastSeries(
-            category=category,
-            history=history,
-            forecast=points,
-            model=model_name,
-            is_fitted=fitted,
-        )
+        return _empty_series(category, history, len(fitting), "unavailable")
 
 
 def detect_anomalies(df: pd.DataFrame, threshold: float = ANOMALY_Z_THRESHOLD) -> list[Anomaly]:

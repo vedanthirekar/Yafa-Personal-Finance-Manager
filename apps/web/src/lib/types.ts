@@ -112,11 +112,19 @@ export interface ForecastSeries {
   category: string | null;
   history: ForecastPoint[];
   forecast: ForecastPoint[];
-  /** e.g. "ARIMA(5, 1, 0)" or "mean-baseline". Shown in the chart footnote. */
+  /** "exponential smoothing", or the reason there is no forecast. */
   model: string;
-  /** false when there wasn't enough history to fit -- the UI says so instead
-   *  of drawing a flat line and implying confidence it doesn't have. */
+  /** false when there wasn't enough history to fit. `forecast` is empty in
+   *  that case -- the UI says how much more history is needed instead of
+   *  drawing a flat line and implying confidence it doesn't have. */
   is_fitted: boolean;
+  /** Complete months available, and how many the forecaster needs. */
+  months_of_history: number;
+  months_required: number;
+  /** The fitted smoothing parameter, when there is one. Near 1 means last
+   *  month predicts this account best; near 0 means its long-run average
+   *  does. Not surfaced in the UI -- it's a model detail, not an insight. */
+  smoothing_level: number | null;
 }
 
 export interface Anomaly {

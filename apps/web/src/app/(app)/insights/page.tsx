@@ -54,9 +54,11 @@ export default function InsightsPage() {
     }));
 
     // Repeat the last actual as the forecast's first point so the two lines
-    // visually join instead of leaving a gap at the seam.
+    // visually join instead of leaving a gap at the seam. Only when there IS
+    // a forecast -- otherwise this leaves one orphaned point that renders as
+    // a stray dot on an otherwise history-only chart.
     const last = rows.at(-1);
-    if (last) last.forecast = last.actual;
+    if (last && overall.forecast.length > 0) last.forecast = last.actual;
 
     for (const p of overall.forecast) {
       rows.push({
@@ -133,13 +135,24 @@ export default function InsightsPage() {
           value={lastMonth ? formatMoney(lastMonth.amount) : "—"}
           hint={lastMonth ? formatMonth(lastMonth.date) : undefined}
         />
+        {/* Until there's enough history the card counts down instead of
+            showing a number. "Unavailable" tells the user nothing they can
+            act on; "3 of 6 months" tells them to keep going. */}
         <StatCard
           label="Next month (projected)"
-          value={nextMonth ? formatMoney(nextMonth.amount) : "—"}
+          value={
+            nextMonth
+              ? formatMoney(nextMonth.amount)
+              : overall
+                ? `${overall.months_of_history} of ${overall.months_required}`
+                : "—"
+          }
           hint={
-            nextMonth?.lower && nextMonth.upper
-              ? `80% range ${formatMoney(nextMonth.lower)}–${formatMoney(nextMonth.upper)}`
-              : undefined
+            nextMonth
+              ? nextMonth.lower && nextMonth.upper
+                ? `Most months land between ${formatMoney(nextMonth.lower)} and ${formatMoney(nextMonth.upper)}`
+                : undefined
+              : "Months logged — keep going and a projection appears here"
           }
         />
         <StatCard
@@ -159,15 +172,14 @@ export default function InsightsPage() {
         <CardHeader>
           <CardTitle>Monthly spend and forecast</CardTitle>
           {overall && (
-            /* Say whether the dotted line is a real projection or a flat
-               average standing in for thin history -- drawing both the same way
-               would imply confidence the second one doesn't have. The model's
-               name is left out on purpose: "ARIMA(5, 1, 0)" tells the reader
-               nothing they can act on. */
+            /* When there's no projection, say what unlocks one rather than
+               just declaring it missing. The model's name is left out on
+               purpose -- "exponential smoothing" tells the reader nothing
+               they can act on. */
             <p className="text-xs text-ink-subtle">
               {overall.is_fitted
-                ? `Projected from ${overall.history.length} months of history · shaded band is the likely range`
-                : "Too little history to project — showing your average instead"}
+                ? `Projected from ${overall.months_of_history} complete months · the shaded band is where most months land`
+                : `Projections start at ${overall.months_required} months of history — you have ${overall.months_of_history}`}
             </p>
           )}
         </CardHeader>
