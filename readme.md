@@ -56,111 +56,60 @@ docker compose up --build
 
 ### Voice → transaction
 
-`WS /ws/voice` takes webm/opus chunks from the browser's `MediaRecorder`,
-returns interim transcripts, and on `finalize` returns one authoritative
-result. `POST /voice/transcribe` does the same without streaming.
+`WS /ws/voice` streams interim transcripts from the browser's `MediaRecorder`
+and returns one final result; `POST /voice/transcribe` does the same
+non-streaming. **Neither saves anything** — both return a proposal, and
+`POST /voice/confirm` is the only write path. Speech recognition mishears
+amounts and the categorizer is right ~3 times in 4, so writing straight from a
+recording would fill the ledger with rows nobody agreed to. A user correction
+during review is sent back alongside the model's original guess, so the model
+can be scored honestly instead of always looking right.
 
-**Neither one saves anything.** Both return a proposal that the user reviews
-and commits with `POST /voice/confirm`, the single write path for voice.
-Speech recognition mishears amounts and the categorizer is right about three
-times in four, so writing straight from a recording fills the ledger with rows
-nobody agreed to. When the user fixes a category during that review, the
-original prediction is sent back alongside it — otherwise the model would be
-scored against the user's own answer and read as perfect forever.
-
-Whisper (`small.en`) auto-selects CUDA with `int8_float16` and falls back to
-CPU — including when a CUDA load fails at runtime, not just when no GPU is
-present.
-
-The transcript is then parsed in layers, cheapest first:
-
-| Layer | Handles | Cost |
-|---|---|---|
-| Regex + currency map | `$12.50`, `1,200 rupees`, `Rs 250`, `₹1200` | free |
-| Spoken numbers | "twenty five dollars", "twelve fifty" | free |
-| Claude structured output | everything messier | one API call |
-
-Two details worth knowing. Spoken **"twelve fifty" means 12.50**, but
-`word2number` sums it to 62 — so two-token shapes are disambiguated explicitly
-(`<unit|teen> <tens>` is a price, `<tens> <unit>` is additive). And currency is
-resolved per user; the previous build parsed USD only while rendering "Rs.".
-
-The LLM layer is entirely optional. With no `ANTHROPIC_API_KEY`, the pipeline
-runs fully local and simply loses the messy-transcript fallback.
+Whisper (`small.en`) auto-selects CUDA and falls back to CPU. The transcript
+is parsed cheapest-first: regex + currency map, then spoken numbers ("twelve
+fifty"), then — only if those fail — a Claude call for anything messier.
+Optional: with no `ANTHROPIC_API_KEY` the pipeline runs fully local and loses
+just that last fallback.
 
 ### Semantic categorization
 
-The description is embedded with `all-MiniLM-L6-v2` (a distilled 6-layer BERT,
-384-dim) and matched by cosine similarity against labeled exemplars in Qdrant.
-The top-10 neighbours vote, weighted by similarity; confidence is the winner's
-share of total similarity mass, so it reflects how *decisive* the vote was
-rather than how close one match landed.
+The description is embedded with `all-MiniLM-L6-v2` and matched by cosine
+similarity against labeled exemplars in Qdrant; the top-10 neighbours vote,
+weighted by similarity. Below a similarity threshold the API returns no
+category at all rather than guess from a distant match. Every correction
+pins the merchant's default and is indexed back into Qdrant as a new
+exemplar, so the model improves from real usage.
 
-Below a similarity threshold the API returns no category at all. Saying "I'm
-not sure, pick one" beats confidently guessing from a distant match.
-
-**Corrections are training data.** Changing a category marks the prediction
-rejected, pins the merchant's default so it skips the model next time, and
-indexes a new exemplar into Qdrant tagged `user_correction` — kept
-distinguishable from the seed corpus so evaluation stays comparable.
-
-> **Accuracy is 90.7%, measured the hard way.** The eval reports two numbers:
-> 99.5% on a held-out split of the generated corpus, and **90.7% on 129
-> hand-written phrases using merchants and wordings the corpus has never seen**
-> (`data/eval_probes.csv`). The second is the one quoted here — the first only
-> proves the generator is self-consistent. Run
-> `uv run python -m tools.eval_categorizer` for both, plus per-class F1 and a
-> confusion matrix. Full write-up in `docs/accuracy-notes.md`.
+> **Accuracy is 90.7%**, measured on 129 hand-written phrases the training
+> corpus never saw (`data/eval_probes.csv`) — not the 99.5% held-out split,
+> which only shows the generator is self-consistent. Run
+> `uv run python -m tools.eval_categorizer` for both plus a confusion matrix.
+> Write-up: [`docs/accuracy-notes.md`](docs/accuracy-notes.md).
 
 ### Forecasting
 
-Monthly **simple exponential smoothing** with 80% prediction intervals,
-per-category series, and z-score anomaly detection scoped per category — a $400
-rent month is normal, a $400 coffee month is not.
+Monthly **simple exponential smoothing**, 80% prediction intervals, and
+per-category z-score anomaly detection — a $400 rent month is normal, a $400
+coffee month is not. Chosen by backtesting eight candidates against real
+series (`uv run python -m tools.eval_forecasting`); the previous ARIMA(5,1,0)
+placed last of eight, 45% worse than a naive "repeat last month" baseline.
+Details: [`docs/forecasting-notes.md`](docs/forecasting-notes.md).
 
-**The model was chosen by measurement, not by reputation.**
-`uv run python -m tools.eval_forecasting` backtests eight candidates against the
-real series — expanding window, one-step-ahead, scored against a naive "next
-month looks like last month" baseline. The previous ARIMA(5,1,0) placed **last
-of eight**, 45% worse than doing nothing, because it estimates five
-autoregressive coefficients from seventeen differenced points. Numbers and
-reasoning: [`docs/forecasting-notes.md`](docs/forecasting-notes.md).
-
-Exponential smoothing is a weighted average of past months where recent months
-count more, and how much more is one parameter (α) fitted per account. That
-single parameter spans both methods that beat ARIMA in the backtest — α→1 is
-"last month repeats", α→0 is "the long-run average" — so the model adapts to
-each user with no per-user model selection or hardcoded window. It is also
-exactly ARIMA(0,1,1): same family as before, correct number of parameters.
-
-Three things the series does that a bare `.fit()` wouldn't:
-
-| | Why |
-|---|---|
-| **Under 6 months → no forecast at all** | `months_of_history` and `months_required` come back instead, and the UI counts down. Below that α is fitted to three or four points and the interval built from it means nothing. The old build showed a flat mean here and called it a projection. |
-| **The current month is excluded from the fit** | The newest bucket is only as complete as today's date. Smoothing weights the latest observation most heavily, so a half-finished month reads as a collapse in spending — and it's the point the model trusts most. It stays in `history` for the chart. |
-| **Six-plus empty months = dormancy, and everything before it is dropped** | Gaps are zero-filled so non-adjacent months aren't treated as consecutive — right for a quiet month, wrong for a year off. The imported historical account has an 18-month hole; including it widened the 80% band to 8.4× the forecast. Trimming to the current era brought that to 1.9×. |
-
-Intervals come from the closed-form ETS(A,N,N) variance, `σ²[1 + (h−1)α²]`
-(Hyndman & Athanasopoulos §7.7). They are still wide — roughly 1.5× the
-forecast on the demo account — because monthly spending genuinely varies that
-much. No model shrinks that; the honest move is to show it.
+Three guardrails a bare `.fit()` wouldn't have: under 6 months of history
+returns no forecast at all rather than a meaningless one; the current
+(incomplete) month is excluded from fitting but still shown on the chart; and
+6+ empty months are treated as dormancy, with history before the gap dropped
+so a year-old account doesn't look like one long streak. Prediction intervals
+stay wide (~1.5× the forecast) because monthly spending genuinely varies that
+much — the honest move is to show it, not shrink it.
 
 ### The interface
 
-Deep green and cream, pill buttons, and a serif for anything that states a
-number. The whole palette lives in the `@theme` block in
-`apps/web/src/app/globals.css`, which is what makes `bg-forest-900` and
-`text-ink-subtle` real utility classes — no component hardcodes a hex value,
-and retheming is one file.
-
-There is no dark mode, deliberately: one committed look, with
-`color-scheme: light` declared so native date pickers, selects, and scrollbars
-don't render in dark chrome when the OS is set to dark.
-
-`/` is a static marketing page — a plain server component with no hooks and no
-data fetching, so Next ships zero JavaScript for it. The app itself starts at
-`/login`.
+Deep green and cream, pill buttons, a serif for numbers — the whole palette is
+one `@theme` block in `apps/web/src/app/globals.css`, so no component
+hardcodes a hex value. No dark mode, deliberately, with `color-scheme: light`
+set so native pickers don't switch chrome on their own. `/` is a static,
+zero-JS marketing page; the app itself starts at `/login`.
 
 ---
 
