@@ -111,14 +111,31 @@ field placements instead of a fragile checked-in layout.
 
 ## Notes on the rewrite
 
-Replaces a 2024 hackathon build (Streamlit + a flat SQLite table rewritten in
-full on every insert). Highlights: `amount` is `NUMERIC`, not `FLOAT`, since
-binary floats can't represent decimal fractions and sums drifted; Qdrant runs
-as a service instead of an embedded client that locked the collection file;
-argon2 replaces bcrypt, with old hashes verified and upgraded on next login;
-`jwt_secret` has no default, so the API refuses to boot rather than sign
-tokens with a well-known key; and the investment page was deleted rather than
-ported, since it generated its returns with `random.uniform()`.
+The 2024 hackathon build already had the right instinct — a FastAPI backend
+behind a thin client, BERT + Qdrant for categorization — but the shape around
+it didn't hold up. A Streamlit multi-page app called that backend over plain
+`requests`, backed by one SQLite file committed to the repo and recreated with
+`Base.metadata.create_all()` on every boot; there was no migration history, no
+async, and voice capture was a single blocking HTTP round trip. Auth was two
+systems wired together — a YAML credential store driving Streamlit's session
+cookie, separate from the backend's own JWT issuing.
+
+The rewrite keeps the same core idea and changes the shape it runs in: two
+independently deployable apps (`apps/api`, `apps/web`) talking over a typed
+REST + WebSocket boundary, Postgres with Alembic migrations instead of a
+committed database file, and Qdrant running as a real service rather than an
+embedded client that held an exclusive lock on the collection. Inside the API,
+a `pipeline` service now sits between routers and the model layer so the
+WebSocket and HTTP voice entry points share one code path instead of each
+reimplementing extraction and categorization. Auth collapsed to one JWT-based
+story. Offline tooling — corpus generation, evaluation, seeding — moved out of
+the backend into its own top-level package (`tools/`) so it stops shipping in
+the API's runtime image. None of this existed before: a CI pipeline, a test
+suite, and a Power BI reporting layer alongside the app itself.
+
+One deliberate scope cut: the investment page wasn't ported. It rendered
+returns from `random.uniform()`, and a rewrite is the wrong time to carry
+a fabricated feature forward unexamined.
 
 ---
 
