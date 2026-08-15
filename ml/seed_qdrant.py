@@ -13,7 +13,6 @@ upserted by deterministic ID and corrections are left untouched.
 
 import argparse
 import asyncio
-import hashlib
 from pathlib import Path
 
 import pandas as pd
@@ -30,10 +29,10 @@ def _point_id(text: str, category: str) -> str:
 
     Re-running the seed then overwrites the same points instead of appending
     duplicates, which would quietly bias the kNN vote toward whatever was
-    seeded most often.
+    seeded most often. Delegates to the categorizer so the seed corpus and
+    user corrections share one scheme.
     """
-    digest = hashlib.sha1(f"{text}|{category}".encode()).hexdigest()
-    return f"{digest[:8]}-{digest[8:12]}-{digest[12:16]}-{digest[16:20]}-{digest[20:32]}"
+    return categorizer.exemplar_id(text, category)
 
 
 async def seed(csv_path: Path, *, recreate: bool = False) -> int:

@@ -1,0 +1,130 @@
+text,category
+morning coffee run,Food
+grabbed a sandwich downtown,Food
+dinner with the team,Food
+picked up milk and bread,Food
+weekly shop at the co-op,Food
+two coffees and a scone,Food
+thai place on 5th,Food
+leftover pizza night,Food
+bodega breakfast,Food
+lunch from the cafeteria,Food
+big grocery haul,Food
+iced matcha,Food
+food truck tacos,Food
+sunday farmers market,Food
+happy meal for the kid,Food
+filled up the tank,Transportation
+uber back from the bar,Transportation
+monthly metro pass,Transportation
+parked in the garage downtown,Transportation
+new set of tires,Transportation
+got the oil changed,Transportation
+bus fare,Transportation
+paid the bridge toll,Transportation
+lyft to the office,Transportation
+gas on the way home,Transportation
+car got towed,Transportation
+train ticket to the city,Transportation
+scooter across campus,Transportation
+annual registration,Transportation
+new running shoes,Apparel
+picked up a winter coat,Apparel
+two pairs of jeans,Apparel
+suit for the interview,Apparel
+socks and underwear,Apparel
+dress for my sister's wedding,Apparel
+thrift store finds,Apparel
+replaced my work boots,Apparel
+hoodie from the campus shop,Apparel
+sneakers on sale,Apparel
+dry cleaning pickup,Apparel
+swimsuit for the trip,Apparel
+paper towels and detergent,Household
+electricity for the month,Household
+internet bill,Household
+new sheets and pillows,Household
+light bulbs and batteries,Household
+stocked up on cleaning stuff,Household
+bought a desk lamp,Household
+plunger and drain cleaner,Household
+water and sewer,Household
+shower curtain,Household
+hardware store run,Household
+storage bins for the closet,Household
+picked up my prescription,Health
+dentist appointment,Health
+copay for the specialist,Health
+allergy meds,Health
+annual physical,Health
+new contacts,Health
+therapy this week,Health
+urgent care last night,Health
+blood test,Health
+flu shot at the pharmacy,Health
+chiropractor visit,Health
+refilled my inhaler,Health
+bought vitamins,Health
+eye exam and new frames,Health
+textbook for organic chem,Education
+online course on python,Education
+notebooks and pens,Education
+exam registration fee,Education
+student loan payment,Education
+printing at the library,Education
+tutoring session,Education
+lab fee for the semester,Education
+bought a graphing calculator,Education
+certification renewal,Education
+conference registration,Education
+study guide,Education
+movie tickets for two,Entertainment
+concert on friday,Entertainment
+bought the new game,Entertainment
+museum admission,Entertainment
+tickets to the ball game,Entertainment
+bowling with the roommates,Entertainment
+rented a movie,Entertainment
+theme park day pass,Entertainment
+comedy club tickets,Entertainment
+arcade night,Entertainment
+season pass for the game,Entertainment
+aquarium with the kids,Entertainment
+bar tab last night,Social Life
+birthday present for mom,Social Life
+drinks after work,Social Life
+wedding gift for the couple,Social Life
+flowers for our anniversary,Social Life
+bottle of wine for the dinner party,Social Life
+chipped in for the group gift,Social Life
+cover at the club,Social Life
+party decorations,Social Life
+date night,Social Life
+six pack for the game,Social Life
+gift card for my coworker,Social Life
+flight to denver,Tourism
+two nights at the hotel,Tourism
+airbnb for the weekend,Tourism
+rental car for the trip,Tourism
+checked bag fee,Tourism
+passport renewal,Tourism
+souvenirs from the trip,Tourism
+national park entrance,Tourism
+airport parking for a week,Tourism
+booked the tour,Tourism
+travel insurance,Tourism
+hostel in lisbon,Tourism
+netflix monthly,Subscription
+gym membership,Subscription
+spotify,Subscription
+phone bill,Subscription
+icloud storage,Subscription
+renewed my domain,Subscription
+annual prime membership,Subscription
+newspaper subscription,Subscription
+adobe monthly,Subscription
+meal kit delivery,Subscription
+vpn renewal,Subscription
+class pack at the studio,Subscription
+paid for chatgpt,Subscription
+costco membership renewal,Subscription

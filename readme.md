@@ -104,12 +104,13 @@ rejected, pins the merchant's default so it skips the model next time, and
 indexes a new exemplar into Qdrant tagged `user_correction` — kept
 distinguishable from the seed corpus so evaluation stays comparable.
 
-> **Accuracy is 75.9%, not 92%.** Run `uv run python -m ml.eval_categorizer`
-> for the current number, per-class F1, and a confusion matrix. Improving it is
-> deliberately out of scope for this pass — the diagnosis (127 keywords
-> colliding across categories, and a starved tail: `subscription` has 30
-> keywords against most categories' 100) is written up in
-> `docs/accuracy-notes.md`.
+> **Accuracy is 90.7%, measured the hard way.** The eval reports two numbers:
+> 99.5% on a held-out split of the generated corpus, and **90.7% on 129
+> hand-written phrases using merchants and wordings the corpus has never seen**
+> (`data/eval_probes.csv`). The second is the one quoted here — the first only
+> proves the generator is self-consistent. Run
+> `uv run python -m ml.eval_categorizer` for both, plus per-class F1 and a
+> confusion matrix. Full write-up in `docs/accuracy-notes.md`.
 
 ### Forecasting
 
@@ -192,9 +193,10 @@ uv run ruff check apps/api ml
 uv run mypy apps/api/app
 
 uv run python -m ml.seed_qdrant            # index the corpus (--recreate to rebuild)
-uv run python -m ml.eval_categorizer       # accuracy + confusion matrix
+uv run python -m ml.eval_categorizer       # held-out + probe accuracy, confusion matrix
 uv run python -m ml.eval_forecasting       # forecast MAE vs naive baselines
-uv run python -m ml.build_training_data    # regenerate the corpus
+uv run python -m ml.build_training_data    # regenerate the corpus from us_expense_spec
+uv run python -m ml.build_demo_data        # regenerate the demo account's transactions
 uv run alembic revision --autogenerate -m "..."
 
 cd apps/web && npm run build

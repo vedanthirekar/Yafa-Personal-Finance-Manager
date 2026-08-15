@@ -192,6 +192,19 @@ async def categorize(
 # --------------------------------------------------------------------------
 
 
+def exemplar_id(text: str, category: str) -> str:
+    """Stable UUID-shaped point ID derived from content.
+
+    Shared with ``ml/seed_qdrant.py`` so the seed corpus and live corrections
+    use one scheme and a correction that restates a seeded pair overwrites it
+    rather than adding a duplicate vote.
+    """
+    import hashlib
+
+    digest = hashlib.sha1(f"{text}|{category}".encode()).hexdigest()
+    return f"{digest[:8]}-{digest[8:12]}-{digest[12:16]}-{digest[16:20]}-{digest[20:32]}"
+
+
 async def add_exemplar(
     text: str,
     category: str,
@@ -203,9 +216,13 @@ async def add_exemplar(
 
     Tagged with ``source`` so evaluation can exclude user data and keep
     measuring against the fixed seed corpus.
-    """
-    import uuid
 
+    The point ID is derived from the content, matching ``ml/seed_qdrant.py``.
+    A random ID would let the same correction accumulate one point per save --
+    confirm "coffee" as Food five times and it casts five votes instead of one,
+    quietly biasing the kNN toward whatever the user happens to correct most
+    often. Deterministic IDs make a repeat correction overwrite itself.
+    """
     client = get_client()
     name = collection_name or settings.qdrant_collection
     vector = await embed(text)
@@ -214,7 +231,7 @@ async def add_exemplar(
         collection_name=name,
         points=[
             qmodels.PointStruct(
-                id=str(uuid.uuid4()),
+                id=exemplar_id(text, category),
                 vector=vector,
                 payload={"text": text, "category": category, "source": source},
             )

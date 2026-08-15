@@ -1,0 +1,901 @@
+description,category,amount
+gas station snacks,Food,12.86
+Outback,Food,18.26
+Trader Joe's,Food,14.44
+Pei Wei,Food,18.34
+Blaze Pizza,Food,11.08
+Little Caesars,Food,28.42
+ice cream,Food,14.02
+First Watch,Food,18.07
+frozen pizza,Food,53.16
+Olive Garden,Food,18.24
+lunch delivery,Food,14.1
+Blue Bottle,Food,4.6
+Wegmans,Food,69.74
+food truck,Food,8.13
+pad thai at Panda Express,Food,22.08
+Chopt pad thai,Food,23.55
+office lunch,Food,149.44
+Grubhub food delivery,Food,20.16
+Publix,Food,40.34
+takeout,Food,76.1
+team lunch,Food,36.52
+noodles at Panda Express,Food,23.03
+Waffle House brunch,Food,32.26
+Cava,Food,22.14
+Tim Hortons coffee,Food,5.51
+Pei Wei pad thai,Food,80.61
+Starbucks,Food,13.98
+delivery at DoorDash,Food,22.56
+Albertsons,Food,102.84
+Chili's,Food,18.52
+Cheesecake Factory,Food,63.41
+pasta,Food,18.53
+Papa John's,Food,33.57
+vending machine,Food,20.51
+Pizza Hut wings,Food,20.11
+Uber Eats,Food,44.79
+breakfast sandwich,Food,11.2
+quesadilla at Jimmy John's,Food,9.26
+Pei Wei noodles,Food,86.26
+Whole Foods produce,Food,14.97
+Sprouts,Food,12.05
+Noodles & Company,Food,81.5
+wings at Pizza Hut,Food,37.46
+Panda Express,Food,12.17
+family dinner at Buffalo Wild Wings,Food,145.76
+takeout at Uber Eats,Food,111.54
+Grubhub lunch delivery,Food,51.29
+Publix orange juice,Food,12.02
+groceries,Food,21.73
+Waffle House,Food,18.2
+Caribou Coffee,Food,76.86
+sub,Food,130.41
+IHOP brunch,Food,65.48
+breakfast at Red Lobster,Food,31.26
+Blaze Pizza wings,Food,17.06
+large pizza,Food,12.52
+Little Caesars large pizza,Food,24.34
+dinner at Cheesecake Factory,Food,65.21
+produce at Albertsons,Food,66.83
+Winn-Dixie orange juice,Food,55.43
+pizza,Food,18.24
+Sprouts peanut butter,Food,17.29
+Texas Roadhouse,Food,48.89
+Olive Garden breakfast,Food,131.66
+large pizza at Little Caesars,Food,18.98
+Texas Roadhouse brunch,Food,75.47
+breadsticks,Food,32.98
+In-N-Out nuggets,Food,11.94
+Papa John's wings,Food,19.73
+DoorDash,Food,31.27
+DoorDash dinner delivery,Food,47.71
+Little Caesars wings,Food,13.71
+DoorDash delivery,Food,34.07
+Seamless,Food,20.86
+farmers market,Food,6.18
+Red Lobster wings,Food,28.68
+americano,Food,11.87
+chips at Food Lion,Food,17.78
+wings at Papa John's,Food,95.65
+DoorDash grocery delivery,Food,51.97
+Domino's,Food,14.97
+dinner at Olive Garden,Food,26.41
+dinner,Food,13.04
+Cracker Barrel dinner,Food,36.05
+Meijer,Food,14.67
+Arby's fries,Food,12.17
+Chopt pho,Food,98.22
+Seamless takeout,Food,15.62
+Applebee's brunch,Food,45.67
+lunch,Food,20.38
+Stop & Shop grocery run,Food,58.97
+breakfast sandwich at Krispy Kreme,Food,7.01
+Jersey Mike's,Food,12.61
+Cheesecake Factory appetizers,Food,28.69
+Panera tacos,Food,10.38
+Dutch Bros,Food,7.3
+Aldi,Food,48.12
+Pizza Hut pizza,Food,11.2
+Instacart,Food,36.83
+family dinner at Chili's,Food,20.85
+burger,Food,17.05
+sub at Chipotle,Food,18.52
+takeout at Postmates,Food,23.49
+snacks,Food,22.75
+Olive Garden family dinner,Food,38.84
+Denny's bbq,Food,26.92
+appetizers at Red Lobster,Food,51.97
+coffee,Food,9.6
+Papa John's slice,Food,34.98
+sushi,Food,18.62
+Postmates,Food,14.07
+Waffle House appetizers,Food,153.1
+grocery delivery,Food,27.72
+milk,Food,112.27
+lunch at Culver's,Food,17.37
+Jamba Juice,Food,3.78
+Trader Joe's coffee beans,Food,106.98
+Subway,Food,14.85
+Domino's large pizza,Food,17.33
+Popeyes,Food,16.05
+Krispy Kreme,Food,10.95
+Panda Express ramen,Food,17.73
+Pizza Hut,Food,12.33
+Texas Roadhouse wings,Food,52.0
+Applebee's,Food,39.14
+First Watch brunch,Food,25.65
+food delivery at Uber Eats,Food,51.81
+Chopt poke bowl,Food,19.23
+H-E-B,Food,83.15
+Taco Bell sub,Food,10.55
+wings at Outback,Food,27.47
+Arby's,Food,7.5
+Pei Wei curry,Food,18.96
+KFC,Food,24.93
+Cracker Barrel,Food,61.73
+Instacart delivery,Food,22.07
+wings,Food,149.24
+Blaze Pizza pizza delivery,Food,13.57
+Popeyes wings,Food,14.89
+sushi at Cava,Food,11.79
+olive oil at Publix,Food,18.53
+Peet's,Food,10.85
+Red Lobster,Food,65.24
+chai latte,Food,11.15
+Whataburger burrito bowl,Food,19.44
+Panda Express curry,Food,14.69
+sushi at Chopt,Food,11.31
+lunch at Subway,Food,22.46
+dumplings,Food,13.88
+produce,Food,70.17
+Postmates delivery,Food,32.09
+Shake Shack,Food,17.69
+vegetables,Food,93.71
+bbq,Food,62.76
+pad thai,Food,24.97
+dumplings at Noodles & Company,Food,21.26
+Dutch Bros pastry,Food,6.74
+fries at Sonic,Food,25.93
+Jersey Mike's wings,Food,21.91
+Peet's cappuccino,Food,8.64
+Noodles & Company pho,Food,14.11
+smoothie,Food,8.98
+dinner delivery at Instacart,Food,30.41
+Albertsons ground beef,Food,17.37
+Wegmans rice,Food,26.37
+Giant produce,Food,83.49
+Chopt,Food,10.02
+Jimmy John's,Food,14.05
+Uber Eats food delivery,Food,104.72
+Dunkin,Food,13.01
+poke bowl at Noodles & Company,Food,26.09
+Blue Bottle pastry,Food,7.63
+poke bowl at Chopt,Food,15.13
+delivery at Uber Eats,Food,24.87
+coffee beans,Food,113.19
+Stop & Shop orange juice,Food,47.48
+Blaze Pizza large pizza,Food,15.98
+Whole Foods chicken,Food,52.77
+breadsticks at Papa John's,Food,16.84
+Meijer peanut butter,Food,161.03
+grocery delivery at Seamless,Food,50.0
+Red Robin,Food,26.85
+Food Lion cereal,Food,94.88
+McDonald's salad,Food,9.78
+dinner at Cracker Barrel,Food,43.2
+peanut butter at H-E-B,Food,43.85
+Uber Eats dinner delivery,Food,19.53
+Chili's lunch,Food,30.76
+Waffle House bbq,Food,28.69
+Kroger,Food,161.97
+Pizza Hut slice,Food,23.86
+pad thai at Noodles & Company,Food,26.73
+Noodles & Company curry,Food,20.79
+Red Robin lunch,Food,64.71
+Panda Express noodles,Food,24.36
+Food Lion,Food,12.07
+Noodles & Company pad thai,Food,18.6
+Sweetgreen,Food,17.38
+Uber Eats late night order,Food,26.52
+groceries at Giant,Food,163.8
+Domino's wings,Food,80.18
+Stop & Shop,Food,19.06
+orange juice at Albertsons,Food,39.16
+Shake Shack sandwich,Food,9.9
+Instacart grocery delivery,Food,29.33
+Raising Cane's,Food,93.3
+Panda Express pho,Food,10.59
+IHOP bbq,Food,47.25
+iced coffee,Food,3.89
+Jamba Juice donuts,Food,12.35
+takeout at Grubhub,Food,34.14
+breadsticks at Blaze Pizza,Food,16.69
+snacks at Winn-Dixie,Food,90.1
+Safeway chicken,Food,78.82
+Uber Eats grocery delivery,Food,26.99
+pasta at Winn-Dixie,Food,91.45
+poke bowl,Food,113.35
+Tim Hortons,Food,9.78
+chicken at Meijer,Food,89.35
+Chick-fil-A,Food,7.71
+Noodles & Company dumplings,Food,15.27
+frozen pizza at Albertsons,Food,14.14
+steak dinner at Buffalo Wild Wings,Food,18.18
+bowl,Food,13.74
+curry,Food,10.44
+dinner at KFC,Food,161.16
+Krispy Kreme croissant,Food,5.04
+poke bowl at Cava,Food,18.46
+Cava curry,Food,10.38
+Denny's,Food,27.07
+Seamless delivery,Food,41.1
+noodles at Chopt,Food,16.08
+In-N-Out takeout,Food,11.52
+Postmates food delivery,Food,124.36
+Outback lunch,Food,18.1
+Tim Hortons cappuccino,Food,5.66
+chicken at Safeway,Food,41.16
+Domino's breadsticks,Food,82.69
+delivery at Postmates,Food,24.35
+McDonald's dinner,Food,11.66
+Peet's donuts,Food,3.99
+Taco Bell,Food,8.36
+Jamba Juice bagel,Food,84.28
+Cava noodles,Food,24.53
+Buffalo Wild Wings burger,Food,37.58
+H-E-B cheese,Food,34.51
+Giant cheese,Food,57.2
+Dutch Bros smoothie,Food,4.16
+Uber Eats takeout,Food,33.84
+pastry,Food,3.87
+Red Lobster brunch,Food,21.58
+weekly groceries at Stop & Shop,Food,104.02
+Blaze Pizza slice,Food,30.15
+Safeway,Food,93.09
+cold brew at Peet's,Food,8.5
+Noodles & Company poke bowl,Food,11.19
+Chick-fil-A lunch,Food,83.86
+fries,Food,25.45
+Instacart dinner delivery,Food,30.89
+cheese,Food,14.73
+Applebee's wings,Food,26.21
+Waffle House wings,Food,68.56
+Postmates grocery delivery,Food,14.84
+food delivery,Food,23.76
+Taco Bell salad,Food,7.68
+Wegmans cereal,Food,81.8
+breakfast sandwich at Dutch Bros,Food,5.54
+Texas Roadhouse burger,Food,36.88
+Wegmans bread,Food,41.66
+pastry at Tim Hortons,Food,13.96
+Krispy Kreme cold brew,Food,3.77
+H-E-B cereal,Food,16.43
+Cracker Barrel bbq,Food,69.14
+grocery delivery at DoorDash,Food,43.49
+Trader Joe's pasta,Food,108.78
+dinner delivery at Postmates,Food,14.22
+gas,Transportation,31.74
+MTA,Transportation,251.05
+train ticket at MARTA,Transportation,41.55
+jump start,Transportation,17.26
+toll at SpotHero,Transportation,9.77
+Muni monthly transit pass,Transportation,25.58
+Curb,Transportation,25.81
+tow truck,Transportation,116.89
+roadside assistance,Transportation,277.57
+Midas inspection,Transportation,23.76
+WMATA light rail fare,Transportation,32.79
+surge ride at Via,Transportation,11.27
+NAPA Auto Parts tire rotation,Transportation,145.85
+Chevron diesel,Transportation,63.91
+registration renewal,Transportation,21.52
+RaceTrac,Transportation,75.08
+Valvoline,Transportation,23.15
+Firestone car wash,Transportation,25.19
+Citi Bike,Transportation,9.63
+Lyft,Transportation,162.42
+car payment,Transportation,20.16
+LAZ Parking parking meter,Transportation,8.88
+Uber taxi,Transportation,19.38
+Lyft ride to work,Transportation,11.82
+Advance Auto Parts,Transportation,164.47
+Amtrak bus fare,Transportation,15.92
+fare reload at Metro,Transportation,111.13
+cab,Transportation,15.17
+NAPA Auto Parts car battery,Transportation,104.35
+Divvy bike rental,Transportation,4.93
+Via,Transportation,10.51
+Curb late night ride,Transportation,9.67
+brake pads at Valvoline,Transportation,101.19
+express lane,Transportation,11.94
+Marathon fuel,Transportation,37.76
+car insurance,Transportation,28.11
+NJ Transit commuter rail,Transportation,14.53
+SunPass,Transportation,22.78
+Citi Bike bike rental,Transportation,111.59
+ParkMobile,Transportation,28.21
+NJ Transit train ticket,Transportation,25.49
+rideshare at Uber,Transportation,31.63
+ParkMobile monthly parking,Transportation,3.12
+Zipcar bike share,Transportation,8.78
+ParkMobile express lane,Transportation,131.01
+Jiffy Lube,Transportation,153.12
+Costco Gas premium gas,Transportation,213.24
+toll,Transportation,6.37
+parking garage at LAZ Parking,Transportation,373.1
+Shell,Transportation,34.4
+commuter rail,Transportation,10.66
+Muni,Transportation,41.85
+Bird,Transportation,316.12
+parking,Transportation,7.7
+Lyft surge ride,Transportation,27.16
+Firestone brake pads,Transportation,32.87
+license renewal,Transportation,5.88
+NJ Transit,Transportation,37.58
+Muni commuter rail,Transportation,24.17
+bus fare at WMATA,Transportation,17.01
+ParkMobile parking garage,Transportation,29.71
+fuel at Speedway,Transportation,29.55
+Curb airport ride,Transportation,17.4
+late night ride at Uber,Transportation,9.85
+scooter rental at Citi Bike,Transportation,6.24
+Citi Bike day pass,Transportation,22.63
+CTA fare reload,Transportation,153.23
+E-ZPass,Transportation,17.6
+Curb ride home,Transportation,198.81
+emissions test at Pep Boys,Transportation,46.4
+Discount Tire car battery,Transportation,89.09
+Uber,Transportation,9.51
+Les Schwab,Transportation,42.28
+E-ZPass parking,Transportation,25.53
+Midas,Transportation,102.97
+parking at SunPass,Transportation,7.94
+O'Reilly alignment,Transportation,36.07
+diesel,Transportation,316.62
+Valero,Transportation,28.04
+Uber airport ride,Transportation,28.66
+LAZ Parking bridge toll,Transportation,5.72
+parking garage,Transportation,96.8
+emissions test,Transportation,110.92
+dmv fee,Transportation,19.24
+Citi Bike bike share,Transportation,204.12
+CTA,Transportation,7.86
+bike share at Divvy,Transportation,4.03
+BP half tank,Transportation,31.42
+tank of gas,Transportation,28.0
+parking at ParkMobile,Transportation,274.14
+Jiffy Lube brake pads,Transportation,58.21
+parking at SpotHero,Transportation,14.09
+Lime,Transportation,12.47
+Lyft ride downtown,Transportation,32.99
+MARTA,Transportation,12.9
+bike share at Lime,Transportation,5.19
+Zipcar,Transportation,5.88
+Midas alignment,Transportation,72.42
+inspection,Transportation,137.87
+Arco tank of gas,Transportation,44.4
+Curb ride downtown,Transportation,207.2
+SEPTA,Transportation,7.47
+Sam's Club Gas fill up,Transportation,55.21
+NAPA Auto Parts emissions test,Transportation,75.19
+Discount Tire,Transportation,161.03
+half tank,Transportation,59.66
+MARTA subway fare,Transportation,6.69
+uber to the airport,Transportation,163.62
+tire rotation,Transportation,82.44
+AutoZone,Transportation,22.19
+gas at QuikTrip,Transportation,35.09
+LAZ Parking tolls,Transportation,166.76
+Via ride home,Transportation,25.54
+tolls,Transportation,11.38
+Discount Tire tire rotation,Transportation,235.65
+taxi,Transportation,34.24
+Curb surge ride,Transportation,8.02
+Metro,Transportation,14.61
+E-ZPass parking garage,Transportation,201.87
+bike rental,Transportation,24.56
+premium gas,Transportation,33.27
+AutoZone windshield wipers,Transportation,119.48
+76 fill up,Transportation,160.55
+Zipcar day pass,Transportation,8.74
+late night ride,Transportation,8.3
+day pass,Transportation,21.53
+WMATA,Transportation,8.61
+O'Reilly tire rotation,Transportation,22.51
+transit pass,Transportation,5.27
+Wawa diesel,Transportation,32.59
+Muni bus fare,Transportation,8.72
+Sunoco premium gas,Transportation,30.5
+bridge toll at SunPass,Transportation,3.06
+SunPass monthly parking,Transportation,14.28
+Divvy scooter rental,Transportation,25.6
+Curb rideshare,Transportation,20.24
+late night ride at Curb,Transportation,22.57
+Divvy,Transportation,10.23
+E-ZPass parking meter,Transportation,12.43
+Metro commuter rail,Transportation,11.5
+commuter rail at BART,Transportation,29.46
+ParkMobile tolls,Transportation,24.39
+Bird bike rental,Transportation,5.87
+QuikTrip,Transportation,36.04
+ParkMobile parking meter,Transportation,149.55
+Firestone,Transportation,31.63
+fuel,Transportation,133.66
+REI puffer jacket,Apparel,113.98
+Converse sneakers,Apparel,130.93
+Under Armour,Apparel,61.38
+DSW slides,Apparel,120.97
+workout clothes at Patagonia,Apparel,90.17
+Athleta,Apparel,39.62
+shoe insoles at Famous Footwear,Apparel,116.22
+alterations,Apparel,16.98
+beanie at Burlington,Apparel,152.8
+H&M skirt,Apparel,79.42
+ASOS,Apparel,57.51
+Nike sneakers,Apparel,119.4
+Gymshark hiking pants,Apparel,92.35
+Old Navy hoodie,Apparel,18.39
+The North Face,Apparel,181.77
+new jeans,Apparel,21.96
+Levi's,Apparel,57.7
+Nike shoe insoles,Apparel,297.43
+American Eagle cardigan,Apparel,41.49
+puffer jacket,Apparel,150.28
+tailoring,Apparel,64.5
+t-shirt,Apparel,64.42
+Columbia workout clothes,Apparel,178.24
+new shoes,Apparel,19.86
+Brooks running shoes,Apparel,43.76
+Madewell,Apparel,23.43
+ThredUp,Apparel,73.27
+Patagonia,Apparel,162.73
+Converse boots,Apparel,28.16
+sunglasses,Apparel,141.51
+Nordstrom Rack dress for the wedding,Apparel,26.93
+boots at Adidas,Apparel,116.6
+beanie,Apparel,45.93
+Marshalls,Apparel,116.77
+shoe repair,Apparel,25.82
+Columbia fleece,Apparel,38.28
+Urban Outfitters slacks,Apparel,21.03
+rain jacket,Apparel,223.55
+Brooks athletic socks,Apparel,73.64
+interview outfit,Apparel,158.79
+dry cleaning,Apparel,37.79
+DSW cleats,Apparel,28.04
+sandals at Adidas,Apparel,112.34
+Abercrombie,Apparel,34.72
+Nordstrom Rack hat,Apparel,100.21
+dress,Apparel,95.39
+Wayfair,Household,35.83
+Costco deodorant,Household,241.32
+pots and pans,Household,31.45
+air filter at Lowe's,Household,15.66
+The Container Store,Household,51.65
+nightstand at Pottery Barn,Household,54.87
+Pottery Barn laundry basket,Household,120.5
+toothbrush at Amazon,Household,25.54
+Big Lots,Household,7.82
+sewer bill,Household,10.47
+Dollar General,Household,7.78
+home supplies,Household,365.76
+household stuff,Household,11.35
+Wayfair cutting board,Household,81.4
+Ace Hardware lawn bags,Household,35.01
+Sam's Club,Household,55.61
+internet bill,Household,17.06
+aluminum foil at Amazon,Household,11.99
+Target,Household,27.25
+screwdriver set at Menards,Household,14.61
+Dollar Tree trash bags,Household,49.11
+IKEA,Household,14.25
+West Elm,Household,98.89
+power bill,Household,56.47
+Harbor Freight furnace filter,Household,9.56
+food containers,Household,24.66
+sunscreen at Amazon,Household,11.94
+Bed Bath & Beyond,Household,154.83
+True Value,Household,33.02
+Bed Bath & Beyond shower curtain,Household,50.2
+Menards,Household,127.12
+Lowe's paint,Household,89.24
+picture frames at West Elm,Household,24.66
+Crate & Barrel cookware,Household,179.17
+Lowe's air filter,Household,31.23
+Big Lots ziploc bags,Household,67.45
+Costco fabric softener,Household,224.06
+Home Depot,Household,29.66
+The Container Store pots and pans,Household,87.75
+Ace Hardware screws,Household,78.06
+utility bill,Household,10.34
+Dollar Tree,Household,15.37
+Dollar Tree dish soap,Household,8.89
+The Container Store cookware,Household,14.46
+Menards extension cord,Household,84.59
+storage bins,Household,114.97
+laundry detergent at Sam's Club,Household,51.07
+Dollar Tree toothbrush,Household,44.01
+rug at Overstock,Household,152.75
+lawn service,Household,68.7
+gas bill,Household,24.63
+renters insurance,Household,54.34
+Lowe's screwdriver set,Household,41.78
+HomeGoods,Household,57.34
+caulk at Ace Hardware,Household,37.97
+all purpose cleaner,Household,38.05
+Family Dollar,Household,40.31
+ziploc bags at Costco,Household,16.58
+Overstock lamp,Household,112.5
+pest control,Household,124.48
+hoa dues,Household,11.94
+cleaning supplies,Household,172.22
+batteries at Sam's Club,Household,24.16
+ziploc bags,Household,293.07
+Costco,Household,16.82
+cookware,Household,72.86
+cleaning supplies at Amazon,Household,18.04
+sunscreen at Sam's Club,Household,57.63
+Harbor Freight,Household,48.06
+rug at IKEA,Household,14.18
+Wayfair shower curtain,Household,84.88
+cleaning supplies at Sam's Club,Household,30.72
+HomeGoods trash can,Household,128.25
+cutting board,Household,92.04
+Sam's Club toothbrush,Household,17.96
+nightstand at Crate & Barrel,Household,40.28
+Harbor Freight screws,Household,35.36
+hose at Lowe's,Household,66.99
+Dollar General deodorant,Household,47.21
+duct tape,Household,275.73
+screws at Ace Hardware,Household,54.3
+bedding,Household,105.67
+Overstock,Household,143.35
+Walmart razors,Household,43.62
+paper plates,Household,30.69
+True Value nails,Household,28.5
+shower curtain at HomeGoods,Household,192.48
+storage bins at IKEA,Household,59.32
+Lowe's,Household,86.87
+Bed Bath & Beyond pots and pans,Household,28.13
+West Elm lamp,Household,62.48
+cookware at Crate & Barrel,Household,192.87
+chiropractor,Health,20.54
+LensCrafters contact lenses,Health,338.96
+pt session,Health,22.27
+Rite Aid vitamins,Health,11.48
+Quest Diagnostics,Health,132.32
+Warby Parker contact solution,Health,86.72
+glasses,Health,138.84
+covid test,Health,46.72
+CVS,Health,43.97
+visit at Teladoc,Health,68.73
+test results,Health,33.22
+follow up visit at Urgent Care,Health,101.54
+GoodRx antibiotics,Health,44.95
+therapy copay,Health,40.02
+GoodRx heating pad,Health,23.27
+One Medical,Health,189.26
+Rite Aid,Health,10.58
+CVS antibiotics,Health,441.4
+vision exam,Health,57.72
+GoodRx refill,Health,7.48
+Walmart Pharmacy,Health,167.8
+Walgreens advil,Health,8.95
+prescription refill at Rite Aid,Health,173.32
+Pearle Vision prescription sunglasses,Health,301.22
+urgent care copay,Health,10.26
+LensCrafters contact solution,Health,193.39
+Aspen Dental cleaning,Health,246.41
+first aid kit,Health,19.7
+SmileDirectClub x-rays,Health,184.84
+Kaiser Permanente visit,Health,44.94
+Pearle Vision,Health,173.39
+blood work,Health,10.03
+x-ray,Health,77.26
+Delta Dental cleaning,Health,280.57
+SmileDirectClub cleaning,Health,201.23
+Walgreens multivitamin,Health,10.91
+Kaiser Permanente test results,Health,32.57
+Urgent Care lab work,Health,422.85
+Invisalign checkup,Health,262.09
+LensCrafters,Health,26.44
+dentist,Health,40.01
+Visionworks,Health,48.07
+LensCrafters reading glasses,Health,237.84
+lab work at Kaiser Permanente,Health,24.2
+specialist copay,Health,84.01
+dermatologist,Health,41.0
+new glasses,Health,123.18
+tylenol at GoodRx,Health,6.3
+x-rays,Health,260.06
+contact solution at Warby Parker,Health,25.17
+America's Best eye exam,Health,200.66
+America's Best contact solution,Health,185.03
+Visionworks prescription sunglasses,Health,152.61
+Visionworks eye exam,Health,31.57
+advil,Health,23.16
+Coursera,Education,396.54
+Pluralsight course enrollment,Education,72.59
+semester fees,Education,81.91
+Campus Bookstore,Education,24.21
+tutoring,Education,72.44
+score report at College Board,Education,51.82
+MasterClass,Education,109.22
+Campus Bookstore study guide,Education,103.72
+Barnes & Noble textbook,Education,61.49
+Brilliant,Education,14.61
+edX,Education,14.44
+OfficeMax notebook,Education,58.07
+library fine,Education,38.24
+Kaplan prep course,Education,243.81
+Princeton Review,Education,97.23
+Kaplan score report,Education,49.39
+certification exam,Education,89.28
+Campus Bookstore used textbook,Education,165.95
+College Board practice tests,Education,157.26
+conference registration,Education,10.54
+test registration at Princeton Review,Education,138.3
+folders at Office Depot,Education,13.52
+online course at DataCamp,Education,26.98
+OfficeMax pencils,Education,62.55
+Duolingo,Education,13.96
+Staples sticky notes,Education,55.25
+AbeBooks lab manual,Education,175.58
+OfficeMax,Education,57.38
+workshop fee,Education,78.45
+course fee,Education,11.12
+Codecademy course enrollment,Education,14.96
+LinkedIn Learning,Education,35.47
+pens,Education,23.54
+AbeBooks,Education,167.05
+notebooks,Education,495.9
+College Board,Education,257.66
+school supplies,Education,12.79
+park admission at Six Flags,Entertainment,102.7
+laser tag at Dave & Buster's,Entertainment,42.99
+Ticketmaster opera tickets,Entertainment,112.23
+Marcus Theatres movie ticket,Entertainment,34.03
+Marcus Theatres,Entertainment,10.0
+Ticketmaster,Entertainment,35.57
+The Met museum admission,Entertainment,28.24
+Exploratorium exhibit tickets,Entertainment,14.94
+Six Flags,Entertainment,186.6
+controller at Xbox,Entertainment,19.52
+Adler Planetarium zoo tickets,Entertainment,33.03
+Vivid Seats,Entertainment,37.13
+AMC,Entertainment,10.04
+Vudu season pass,Entertainment,13.11
+book,Entertainment,45.95
+dlc at Xbox,Entertainment,12.25
+Battle.net bundle,Entertainment,38.55
+theme park tickets,Entertainment,68.82
+magazine,Entertainment,17.66
+Busch Gardens,Entertainment,59.7
+sports game,Entertainment,12.77
+museum admission at MoMA,Entertainment,24.5
+GameStop,Entertainment,9.42
+concert,Entertainment,41.12
+theme park tickets at Disneyland,Entertainment,51.18
+Bowlero,Entertainment,21.49
+batting cages,Entertainment,239.69
+Redbox movie rental,Entertainment,10.09
+comic book,Entertainment,31.17
+Ticketmaster football tickets,Entertainment,72.12
+broadway tickets,Entertainment,109.01
+Xbox,Entertainment,44.2
+Vudu,Entertainment,4.93
+baseball tickets at Ticketmaster,Entertainment,37.67
+Regal,Entertainment,27.03
+opening night tickets,Entertainment,17.2
+The Met exhibit tickets,Entertainment,28.52
+Six Flags park parking,Entertainment,51.54
+Field Museum planetarium,Entertainment,19.34
+Live Nation tour tickets,Entertainment,225.28
+iTunes movie rental,Entertainment,13.32
+Redbox,Entertainment,8.87
+Fandango,Entertainment,13.31
+The Met aquarium tickets,Entertainment,28.57
+movie night,Entertainment,44.37
+park admission at Sea World,Entertainment,59.7
+Cedar Point,Entertainment,89.71
+imax tickets at Alamo Drafthouse,Entertainment,136.04
+exhibit tickets,Entertainment,14.41
+Alamo Drafthouse two movie tickets,Entertainment,9.87
+Smithsonian planetarium,Entertainment,37.92
+Fandango imax tickets,Entertainment,27.46
+park parking,Entertainment,189.83
+Nintendo eShop game pass,Entertainment,15.5
+Topgolf arcade games,Entertainment,72.26
+Google Play,Entertainment,5.8
+Live Nation,Entertainment,153.42
+Fandango 3d tickets,Entertainment,30.73
+itch.io bundle,Entertainment,157.28
+Main Event bowling,Entertainment,31.92
+Steam,Entertainment,220.14
+vinyl record,Entertainment,49.44
+MoMA,Entertainment,124.67
+Taproom,Social Life,33.07
+Oriental Trading tableware,Social Life,11.01
+Brewery a round of drinks,Social Life,26.47
+graduation gift at Sephora,Social Life,56.18
+liquor,Social Life,42.13
+office party contribution,Social Life,31.8
+Brewery,Social Life,28.69
+decorations at Michaels,Social Life,19.5
+Sports Bar,Social Life,82.83
+Edible Arrangements holiday gift,Social Life,19.27
+BevMo champagne,Social Life,16.58
+ABC Fine Wine hard seltzer,Social Life,42.83
+The Local Pub bar tab,Social Life,19.63
+Yankee Candle birthday gift,Social Life,71.46
+dinner date,Social Life,12.03
+date night,Social Life,14.85
+baby shower gift,Social Life,45.23
+birthday gift,Social Life,28.03
+Liquor Barn tequila,Social Life,45.74
+baby shower gift at Sephora,Social Life,81.61
+balloons at Michaels,Social Life,11.43
+Binny's,Social Life,161.56
+Total Wine,Social Life,264.65
+tableware at Party City,Social Life,145.79
+Liquor Barn,Social Life,52.68
+hard seltzer at Total Wine,Social Life,34.89
+birthday dinner,Social Life,52.97
+club cover at Sports Bar,Social Life,86.36
+ABC Fine Wine,Social Life,75.18
+1-800-Flowers greeting card,Social Life,22.0
+potluck contribution,Social Life,52.68
+Total Wine vodka,Social Life,18.23
+Michaels cake for the party,Social Life,14.19
+Etsy,Social Life,102.78
+birthday gift at Sephora,Social Life,49.4
+Hallmark bouquet,Social Life,15.03
+Michaels,Social Life,21.62
+night out with friends,Social Life,35.76
+drinks at Wine Bar,Social Life,70.5
+Oriental Trading,Social Life,11.66
+Bath & Body Works bouquet,Social Life,71.02
+gift card at Bath & Body Works,Social Life,37.18
+Wine Bar,Social Life,77.89
+Taproom cover charge,Social Life,56.2
+liquor at Total Wine,Social Life,14.1
+split the bill,Social Life,74.73
+Party City,Social Life,247.56
+cake for the party,Social Life,26.03
+Sephora flowers,Social Life,20.23
+The Local Pub,Social Life,67.08
+1-800-Flowers gift card,Social Life,16.85
+Speakeasy drinks,Social Life,14.38
+wine,Social Life,49.51
+Spec's,Social Life,35.34
+Yankee Candle anniversary gift,Social Life,15.0
+Brewery pitcher,Social Life,73.04
+game night snacks,Social Life,20.67
+party favors,Social Life,28.07
+anniversary gift at Yankee Candle,Social Life,17.32
+drinks with friends at Beer Garden,Social Life,130.99
+Brewery happy hour,Social Life,32.07
+Edible Arrangements wedding gift,Social Life,54.72
+drinks,Social Life,166.86
+BevMo,Social Life,37.59
+Cocktail Bar club cover,Social Life,32.94
+Hallmark,Social Life,48.29
+tequila,Social Life,29.25
+Papyrus,Social Life,89.47
+Party City tableware,Social Life,13.3
+friend's birthday,Social Life,43.89
+coffee with a friend,Social Life,12.7
+Party City banner,Social Life,17.23
+banner,Social Life,62.32
+bachelor party,Social Life,12.01
+happy hour,Social Life,20.44
+ABC Fine Wine tequila,Social Life,59.0
+bar tab,Social Life,130.18
+Party City party favors,Social Life,11.0
+Papyrus anniversary gift,Social Life,74.23
+liquor at Spec's,Social Life,37.85
+Bath & Body Works wedding gift,Social Life,102.61
+Bath & Body Works,Social Life,32.03
+Binny's tequila,Social Life,70.27
+excursion at Priceline,Tourism,322.32
+Sixt rental car gas,Tourism,369.58
+Turo rental car gas,Tourism,296.14
+TSA PreCheck,Tourism,64.78
+Avis car rental insurance,Tourism,202.13
+Budget Rent a Car additional driver fee,Tourism,166.03
+GetYourGuide,Tourism,206.07
+Avis,Tourism,873.62
+CLEAR,Tourism,64.22
+United,Tourism,342.86
+flight change fee,Tourism,771.7
+souvenirs,Tourism,367.34
+Global Entry,Tourism,99.24
+Ritz-Carlton,Tourism,80.67
+hotel,Tourism,72.78
+visa fee,Tourism,139.43
+National Park Service,Tourism,24.25
+application fee,Tourism,20.5
+Holiday Inn extra night,Tourism,365.72
+trip booking at GetYourGuide,Tourism,184.58
+trip to see family,Tourism,576.4
+Enterprise,Tourism,796.21
+Delta early boarding,Tourism,281.83
+Best Western airbnb stay,Tourism,90.77
+Budget Rent a Car,Tourism,100.27
+Holiday Inn hotel,Tourism,127.04
+Kayak guided tour,Tourism,505.14
+flight,Tourism,75.57
+gym membership,Subscription,9.15
+Wall Street Journal,Subscription,8.97
+initiation fee,Subscription,44.46
+24 Hour Fitness monthly membership,Subscription,72.81
+Namecheap,Subscription,47.07
+Box monthly storage,Subscription,4.37
+monthly phone plan,Subscription,24.06
+Sam's Club Membership,Subscription,98.52
+24 Hour Fitness,Subscription,55.74
+domain renewal,Subscription,27.17
+music streaming,Subscription,22.9
+monthly dues,Subscription,76.18
+family plan at T-Mobile,Subscription,89.11
+line charge at Verizon,Subscription,15.04
+Factor,Subscription,19.18
+The Atlantic monthly subscription,Subscription,5.26
+Peloton initiation fee,Subscription,143.85
+phone bill,Subscription,14.01
+BarkBox subscription,Subscription,56.51
+auto renewed,Subscription,9.29
+streaming service,Subscription,11.95
+Amazon Prime membership,Subscription,217.37
+wireless bill,Subscription,19.47
+premium plan,Subscription,16.81
+Blue Apron subscription box,Subscription,85.33
+HelloFresh subscription box,Subscription,19.5
+Sam's Club Membership membership renewal,Subscription,80.98
+software license,Subscription,32.89
+Backblaze,Subscription,6.36
+Canva license,Subscription,34.45
+Adobe Creative Cloud pro plan,Subscription,13.48
+Factor monthly box,Subscription,34.85
+Dropbox storage plan,Subscription,100.34
+Dropbox upgrade,Subscription,18.26
+family plan at Tidal,Subscription,7.55
+Substack subscription,Subscription,23.17
+extra storage,Subscription,12.6
+yearly fee,Subscription,95.85
+Costco Membership membership,Subscription,125.27
+HelloFresh,Subscription,41.21
+monthly membership,Subscription,15.57
+Blue Apron auto ship,Subscription,54.01
+The Economist monthly subscription,Subscription,4.05
+Audible family plan,Subscription,6.33
+SiriusXM student plan,Subscription,93.86
+annual membership,Subscription,64.49
+Microsoft 365,Subscription,52.19
+Box,Subscription,23.71
+Dollar Shave Club,Subscription,48.89
+Chewy subscription box,Subscription,83.72
+Grammarly Premium monthly fee,Subscription,25.27
+Spotify,Subscription,10.43
+Tidal annual plan,Subscription,13.83
+family plan,Subscription,10.92
+Spotify annual plan,Subscription,18.68
+monthly fee at Adobe,Subscription,11.34
+cell phone plan,Subscription,7.34
+Orange Theory monthly dues,Subscription,114.04
+Patreon,Subscription,23.22
+membership renewal at Walmart+,Subscription,63.93
+Prime Video,Subscription,22.66
+icloud storage,Subscription,134.64
+subscription,Subscription,137.04
+Substack monthly pledge,Subscription,28.64
+Spotify monthly fee,Subscription,6.82
+Google One monthly storage,Subscription,13.99
+Substack membership,Subscription,13.67
+annual renewal,Subscription,18.72
+gym dues,Subscription,8.66
+Audible premium,Subscription,7.44
+Dropbox monthly storage,Subscription,14.87
+cloud storage,Subscription,10.66
+digital subscription at Patreon,Subscription,21.83

@@ -1,95 +1,89 @@
-# Categorizer accuracy — diagnosis and plan
+# Categorizer accuracy — where it stands
 
-**Not worked on in this pass.** Written down so the analysis isn't re-derived
-later.
+Regenerate with `uv run python -m ml.eval_categorizer`, which writes
+`data/eval_report.json`.
 
-## Where it stands
+## Two numbers, and only one of them means anything
 
-`data/eval_report.json`, regenerated with `uv run python -m ml.eval_categorizer`:
-
-| | |
-|---|---|
-| Accuracy | **0.759** |
-| Split | stratified 80/20, 2191 train / 548 test |
-| Model | `all-MiniLM-L6-v2`, frozen, k=10 similarity-weighted vote |
-
-Worst classes:
-
-| Category | F1 | Recall |
+| | accuracy | what it measures |
 |---|---|---|
-| Tourism | 0.50 | 0.43 |
-| Subscription | 0.60 | 0.50 |
-| Health | 0.66 | — |
+| Held-out split | **0.995** | 80/20 stratified split of the generated corpus. Both sides come from the same generator, so this is internal consistency. Read it as a floor. |
+| **Hand-written probes** | **0.907** | `data/eval_probes.csv` — 129 phrases written by hand with merchants and wordings the corpus has never seen. **This is the real number.** |
 
-## Why — it's the corpus, not the model
+Model: `all-MiniLM-L6-v2`, frozen, k=10 similarity-weighted vote.
 
-Measured over `data/categories.csv` (1816 rows, 1651 unique keywords):
+The gap between the two is the useful diagnostic. When it widens, the corpus is
+drifting away from the way people actually talk.
 
-**1. 127 keywords appear under more than one category.** `art`, `music`,
-`dance`, `theater`, `film`, `opera`, `ballet`, `folklore`, `festivals`,
-`celebration`, `cuisine`, `cooking`, `performance`, `tradition`… Culture,
-Tourism, Entertainment and Festivals are mutually contaminated. No model can
-beat label noise: the same string carries two different labels in training, so
-some test items are unanswerable by construction.
+### Comparing against the old number honestly
 
-**2. The tail is starved.** Most categories have 100 keywords. `subscription`
-has **30**; `gift` has **15**. Under a kNN vote, a class with a third of the
-exemplar density loses ties it should win — which is exactly the recall
-collapse (0.50) that Subscription shows.
+The previous corpus reported **0.759**, and that figure is comparable to the
+**0.995** above, not to the 0.907 — both are in-distribution splits. The old
+setup had no out-of-distribution measurement at all, which was the core problem
+with it: the test split was drawn from the same four templates as the training
+split, so the number flattered itself.
 
-**3. The corpus is template-generated.** Keywords are expanded through four
-fixed templates: `"spent money on {kw}"`, `"paid for {kw}"`, `"{kw} expense"`,
-`"bought {kw}"`. The model partly learns template shape rather than semantics,
-and — worse — the *test* split is drawn from the same templates, so the
-reported number is measured on unrealistically self-similar text.
+The honest claim is: *90.7% on held-out phrasings the corpus has never seen.*
 
-These three facts map directly onto the two failing classes. Reproduce with:
+## What was wrong before
 
-```sh
-uv run python -c "
-import pandas as pd, collections
-df = pd.read_csv('data/categories.csv')
-c = collections.Counter(df['words'].astype(str).str.strip().str.lower())
-print('keywords in >1 category:', sum(1 for n in c.values() if n > 1))
-print(df['category'].value_counts().tail(5))
-"
-```
+The old corpus was `data/categories.csv` (bare keywords through four fixed
+templates) plus `data/sample-data.csv` (an anonymised Indian expense ledger).
 
-## Plan, in order
+1. **Exemplars didn't look like queries.** `pipeline.process_transcript`
+   categorizes on `"{description} {merchant}"` — "coffee starbucks" — but only
+   **1.3%** of exemplars (36 of 2,739) contained a brand name. The one signal
+   the pipeline deliberately adds was the one the corpus couldn't match on.
+2. **Two categories were unreachable.** `Apparel` and `Entertainment` are in the
+   app's category list, but the builder folded them into Household and Social
+   Life. No exemplar could ever vote for them. Separately, the corpus could
+   predict `Investment` and `Money transfer`, which the UI has no option for —
+   8% of rows carried a label the user couldn't select.
+3. **The tail was starved and narrow.** Subscription had 60 exemplars against
+   Social Life's 701, and all 60 were video streaming services — so "gym
+   membership" or "iCloud storage" matched nothing. Recall was 0.50.
+4. **127 keywords appeared under more than one category** (`art`, `music`,
+   `festivals`, `cuisine`…). Same string, two labels, unanswerable by
+   construction.
+5. **Transportation was 70% anonymisation placeholders** — "2 Current Residence
+   to Place 0". Its 0.89 F1 was partly the model learning `to Place` →
+   Transportation, an artifact that doesn't survive contact with real speech.
 
-Data first. Model changes before the corpus is fixed will fit noise.
+## What replaced it
 
-1. **De-collide the taxonomy.** Resolve all 127 duplicates — assign each
-   keyword one owner category or drop it. Emit `ml/taxonomy_conflicts.csv` as
-   an audit trail.
-2. **Balance the tail.** Bring `subscription` and `gift` to parity with a
-   curated keyword and real-merchant list (Netflix, Spotify, Prime, iCloud…).
-3. **Replace templates with realistic text.** Mine the 2176 real descriptions
-   in `data/sample-data.csv` and add a curated merchant list. Target ≥8k
-   examples that look like things people actually say and banks actually print.
-4. **Then** consider fine-tuning the encoder — `SentenceTransformerTrainer`
-   with `MultipleNegativesRankingLoss` on labeled pairs. Baselines to report
-   alongside it: frozen MiniLM kNN (today's 0.759), frozen `bge-base-en-v1.5`
-   kNN, and a logistic-regression head on frozen embeddings.
-5. **Evaluate honestly.** Stratified 5-fold *plus* a held-out set drawn only
-   from real `sample-data.csv` descriptions, never from generated templates —
-   a template-only test set flatters the model.
-6. **Only then**, if the confusion matrix shows two classes a human couldn't
-   separate either, merge them — with the matrix as the evidence.
+`ml/us_expense_spec.py` — a curated US vocabulary of merchants and the items
+they actually sell, grouped by affinity so the generator never emits "museum
+admission steam". `ml/build_training_data.py` expands it into ~7,800 exemplars,
+balanced at 800 per category (Education lands at 620, its vocabulary is
+smaller), weighted toward the `"{item} {merchant}"` shape the pipeline queries
+with.
 
-## Two things already in place
+The same spec generates `data/demo-transactions.csv` via
+`ml/build_demo_data.py`, so the demo account shows merchants the model was
+trained to recognise, with USD amounts that make sense.
 
-- `ml/eval_categorizer.py` writes a **confusion matrix** alongside per-class
-  F1. The interesting failures are confusions between specific pairs, which
-  per-class scores alone don't show.
-- Every prediction is persisted to `category_predictions` (predicted category,
-  confidence, model version) and corrections flip `accepted` and set
-  `corrected_to`. That gives a **live accuracy signal from real user
-  behaviour** — how often people keep the suggestion — which is arguably more
-  honest than any offline number against a synthetic corpus. Query it via
-  `GET /transactions/stats/categorization-quality` or the
-  `vw_powerbi_categorization_quality` view.
+`data/categories.csv` and `data/sample-data.csv` are now unread. Left on disk
+rather than deleted.
 
-## Until then
+## Weakest classes now
 
-The resume bullet should carry the measured number, not 92%.
+| Category | F1 (probes) | note |
+|---|---|---|
+| Tourism | 0.78 | Confused with Transportation — "airport parking", "shuttle to the hotel" genuinely sit on the boundary. |
+| Household | 0.87 | Utility bills vs Subscription recurring charges. |
+| Transportation | 0.89 | The other side of the Tourism confusion. |
+
+Tourism/Transportation is the one pair worth looking at next, and the fix is
+probably taxonomy rather than data: decide once whether travel-day ground
+transport is Transportation or Tourism, and write it into the spec's judgment
+calls.
+
+## Still true, still worth having
+
+- Every prediction is persisted to `category_predictions` with its confidence
+  and model version; corrections flip `accepted` and set `corrected_to`. That's
+  a **live accuracy signal from real user behaviour** — how often people keep
+  the suggestion — which beats any offline number. Query it via
+  `GET /transactions/stats/categorization-quality`.
+- Corrections index back into Qdrant tagged `user_correction`, kept
+  distinguishable from seed rows so evaluation stays comparable.
