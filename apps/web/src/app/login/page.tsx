@@ -14,9 +14,7 @@ import { cn } from "@/lib/utils";
 type Mode = "login" | "register";
 
 const PITCH = [
-  "Say what you spent — it fills in the rest",
-  "Categories learned from your own history",
-  "Forecasts with an honest margin of error",
+  "Just say it and we handle the rest"
 ];
 
 export default function LoginPage() {
@@ -65,7 +63,7 @@ export default function LoginPage() {
         <div>
           <span className="font-display text-3xl font-semibold text-cream-50">YAFA</span>
           <h1 className="mt-6 max-w-md font-display text-4xl leading-tight text-cream-50">
-            The <em className="italic text-mint-500">easiest</em> way to log an expense
+            The <em className="italic text-mint-500">easiest</em> way to log your expenses
           </h1>
 
           <ul className="mt-8 space-y-3">
@@ -86,7 +84,7 @@ export default function LoginPage() {
         <div className="w-full max-w-sm">
           <div className="lg:hidden">
             <span className="font-display text-3xl font-semibold">YAFA</span>
-            <p className="mt-1 text-sm text-ink-muted">Say what you spent. It files itself.</p>
+            <p className="mt-1 text-sm text-ink-muted">Just say it and we handle the rest</p>
           </div>
 
           {/* Demo first: the fastest path to seeing the app do something. */}
@@ -104,7 +102,7 @@ export default function LoginPage() {
             Try the demo
           </Button>
           <p className="mt-2.5 text-center text-xs text-ink-subtle">
-            18 months of sample data. No signup.
+            Demo acount with some sample data. 
           </p>
 
           <div className="my-7 flex items-center gap-3">
