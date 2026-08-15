@@ -20,9 +20,7 @@ spending is heading.
 
 ## Notes on the rewrite
 
-This replaces a 2024 hackathon build with the same one, still. Voice-first
-capture, BERT + Qdrant categorization, a forecast — the intent never changed.
-What changed is the engineering underneath it, dimension by dimension:
+This replaces a 2024 hackathon build with a better architecture and frontend. The core of Voice-first capture, categorization and forecasting remains the same. 
 
 | | Then (2024) | Now |
 |---|---|---|
@@ -31,20 +29,8 @@ What changed is the engineering underneath it, dimension by dimension:
 | Database | SQLite, one file committed to the repo, schema recreated with `Base.metadata.create_all()` on every boot | Postgres, versioned with Alembic |
 | Backend execution | sync FastAPI, blocking SQLAlchemy | fully async, `asyncpg` end to end |
 | Categorization | BERT + Qdrant — but Qdrant embedded, holding an exclusive file lock | same BERT + Qdrant, Qdrant running as a real service |
-| Voice capture | one blocking HTTP round trip | streaming WebSocket + HTTP, both sharing one `pipeline` extraction path |
-| Auth | two systems: a YAML credential store driving the frontend's session cookie, separate from the backend's own JWT | one JWT-based story |
-| Offline tooling | nested inside the backend (`backend/scripts/`) | its own top-level package (`tools/`), out of the API's runtime image |
 | Quality | no CI, no tests | CI pipeline, 102 tests, type checking |
-| Reporting | none | Power BI star schema |
 
-The backend already had the right instinct going in — FastAPI, BERT, Qdrant
-are all present in the 2024 build. What it lacked was the shape to run
-reliably: no migrations, no async, and two half-built auth systems instead of
-one. The rewrite is that shape, not a new idea.
-
-One deliberate scope cut: the investment page wasn't ported. It rendered
-returns from `random.uniform()`, and a rewrite is the wrong time to carry
-a fabricated feature forward unexamined.
 
 ---
 
