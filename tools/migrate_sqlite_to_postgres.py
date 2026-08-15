@@ -1,7 +1,7 @@
 """One-off migration of the SQLite-era data into Postgres.
 
-    uv run python -m ml.migrate_sqlite_to_postgres --yafa-db backend/yafa.db
-    uv run python -m ml.migrate_sqlite_to_postgres --legacy-db /tmp/database.db
+    uv run python -m tools.migrate_sqlite_to_postgres --yafa-db backend/yafa.db
+    uv run python -m tools.migrate_sqlite_to_postgres --legacy-db /tmp/database.db
 
 Two historical sources, with different schemas:
 

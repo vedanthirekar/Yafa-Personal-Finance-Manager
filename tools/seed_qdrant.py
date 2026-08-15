@@ -1,6 +1,6 @@
 """Index the labeled training corpus into Qdrant.
 
-    uv run python -m ml.seed_qdrant [--recreate]
+    uv run python -m tools.seed_qdrant [--recreate]
 
 Unlike the previous embedded-Qdrant version, this can run while the API is
 serving traffic -- the collection is a service, not a locked directory.

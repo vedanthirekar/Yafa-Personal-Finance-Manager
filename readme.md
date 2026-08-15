@@ -29,7 +29,7 @@ python -c "import secrets; print(secrets.token_urlsafe(64))"   # paste into YAFA
 docker compose up -d postgres qdrant
 uv sync --group ml
 uv run alembic upgrade head
-uv run python -m ml.seed_qdrant                # index the categorization corpus
+uv run python -m tools.seed_qdrant                # index the categorization corpus
 uv run uvicorn app.main:app --reload --app-dir apps/api
 
 cd apps/web && npm install && npm run dev
@@ -109,7 +109,7 @@ distinguishable from the seed corpus so evaluation stays comparable.
 > hand-written phrases using merchants and wordings the corpus has never seen**
 > (`data/eval_probes.csv`). The second is the one quoted here — the first only
 > proves the generator is self-consistent. Run
-> `uv run python -m ml.eval_categorizer` for both, plus per-class F1 and a
+> `uv run python -m tools.eval_categorizer` for both, plus per-class F1 and a
 > confusion matrix. Full write-up in `docs/accuracy-notes.md`.
 
 ### Forecasting
@@ -119,7 +119,7 @@ per-category series, and z-score anomaly detection scoped per category — a $40
 rent month is normal, a $400 coffee month is not.
 
 **The model was chosen by measurement, not by reputation.**
-`uv run python -m ml.eval_forecasting` backtests eight candidates against the
+`uv run python -m tools.eval_forecasting` backtests eight candidates against the
 real series — expanding window, one-step-ahead, scored against a naive "next
 month looks like last month" baseline. The previous ARIMA(5,1,0) placed **last
 of eight**, 45% worse than doing nothing, because it estimates five
@@ -179,7 +179,7 @@ apps/
     tests/        102 tests
   web/            Next.js 16 + Tailwind v4 + TanStack Query + Recharts
                   routes: / (landing) · /login · /record · /transactions · /insights
-ml/               corpus building, Qdrant seeding, evaluation, SQLite migration
+tools/            corpus building, Qdrant seeding, evaluation, SQLite migration
 powerbi/          star-schema SQL + PBIP semantic model (TMDL)
 infra/            Dockerfiles
 compose.yaml      postgres · qdrant · api · web
@@ -192,11 +192,11 @@ uv run pytest apps/api/tests            # 102 tests; integration ones skip if th
 uv run ruff check apps/api ml
 uv run mypy apps/api/app
 
-uv run python -m ml.seed_qdrant            # index the corpus (--recreate to rebuild)
-uv run python -m ml.eval_categorizer       # held-out + probe accuracy, confusion matrix
-uv run python -m ml.eval_forecasting       # forecast MAE vs naive baselines
-uv run python -m ml.build_training_data    # regenerate the corpus from us_expense_spec
-uv run python -m ml.build_demo_data        # regenerate the demo account's transactions
+uv run python -m tools.seed_qdrant            # index the corpus (--recreate to rebuild)
+uv run python -m tools.eval_categorizer       # held-out + probe accuracy, confusion matrix
+uv run python -m tools.eval_forecasting       # forecast MAE vs naive baselines
+uv run python -m tools.build_training_data    # regenerate the corpus from us_expense_spec
+uv run python -m tools.build_demo_data        # regenerate the demo account's transactions
 uv run alembic revision --autogenerate -m "..."
 
 cd apps/web && npm run build
@@ -206,7 +206,7 @@ Importing the old SQLite data:
 
 ```sh
 git show 11c4de1:database.db > /tmp/database.db     # pre-revamp, from git history
-uv run python -m ml.migrate_sqlite_to_postgres \
+uv run python -m tools.migrate_sqlite_to_postgres \
   --yafa-db backend/yafa.db --legacy-db /tmp/database.db
 ```
 

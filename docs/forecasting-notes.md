@@ -14,7 +14,7 @@ far as the git history shows, was never compared against anything.
 
 ## The measurement
 
-`uv run python -m ml.eval_forecasting` backtests eight candidates against the
+`uv run python -m tools.eval_forecasting` backtests eight candidates against the
 real series in Postgres — expanding window, one-step-ahead, scored by mean
 absolute error against a naive "next month looks like last month" baseline.
 
@@ -151,7 +151,7 @@ honest presentation is to show the range and say what it means.
 
 ## Caveat on the backtest
 
-`ml/eval_forecasting.py` scores candidates on the raw zero-filled series — it
+`tools/eval_forecasting.py` scores candidates on the raw zero-filled series — it
 does not apply the dormancy trim or the partial-month drop that the service
 does. That is deliberate: it is a model-comparison harness, and every candidate
 sees identical input, so the *ranking* is sound. The absolute MAEs above are

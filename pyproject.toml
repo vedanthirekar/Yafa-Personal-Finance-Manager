@@ -104,9 +104,9 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 # Two importable packages live outside the repo root, so point hatch at both.
-# This is what makes `import app` and `import ml` work after `uv sync`.
+# This is what makes `import app` and `import tools` work after `uv sync`.
 [tool.hatch.build.targets.wheel]
-packages = ["apps/api/app", "ml"]
+packages = ["apps/api/app", "tools"]
 
 # ---------------------------------------------------------------------------
 # tooling
@@ -115,7 +115,7 @@ packages = ["apps/api/app", "ml"]
 [tool.ruff]
 line-length = 100
 target-version = "py312"
-src = ["apps/api", "ml"]
+src = ["apps/api", "tools"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "UP", "B", "C4", "SIM", "RUF"]

@@ -1,14 +1,14 @@
-"""Build the categorizer's exemplar corpus from ``ml/us_expense_spec.py``.
+"""Build the categorizer's exemplar corpus from ``tools/us_expense_spec.py``.
 
 Run from the repo root:
-    uv run python -m ml.build_training_data
+    uv run python -m tools.build_training_data
 
 What changed, and why
 ---------------------
 This used to expand ``data/categories.csv`` keywords through four fixed
 templates ("spent money on {kw}") and append ``data/sample-data.csv``, an
 anonymised Indian expense ledger. Both sources are now unused -- the files are
-left in place, but nothing reads them. See ``ml/us_expense_spec.py`` for the
+left in place, but nothing reads them. See ``tools/us_expense_spec.py`` for the
 full diagnosis; the short version is that the old exemplars didn't resemble the
 queries the categorizer actually receives.
 

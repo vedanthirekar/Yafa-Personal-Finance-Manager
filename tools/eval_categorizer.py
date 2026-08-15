@@ -1,6 +1,6 @@
 """Offline evaluation of the BERT + Qdrant categorizer.
 
-    uv run python -m ml.eval_categorizer
+    uv run python -m tools.eval_categorizer
 
 Stratified 80/20 split of the labeled corpus, indexed into a throwaway
 collection kept separate from the production one, then scored on the held-out
@@ -14,7 +14,7 @@ Two numbers are reported, and the second is the one that matters:
 * **probes** -- ``data/eval_probes.csv``, hand-written phrases using merchants
   and wordings the corpus has never seen ("grabbed a sandwich downtown",
   "uber back from the bar"). Nothing here was generated from
-  ``ml/us_expense_spec.py``, so this is the number that estimates real-world
+  ``tools/us_expense_spec.py``, so this is the number that estimates real-world
   behaviour.
 
 The old version reported only the first kind, against a corpus where 65% of

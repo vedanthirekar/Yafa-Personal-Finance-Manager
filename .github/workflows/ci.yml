@@ -64,10 +64,10 @@ jobs:
           echo "Qdrant did not become ready"; exit 1
 
       - name: Lint
-        run: uv run ruff check apps/api ml
+        run: uv run ruff check apps/api tools
 
       - name: Format check
-        run: uv run ruff format --check apps/api ml
+        run: uv run ruff format --check apps/api tools
 
       - name: Type check
         run: uv run mypy apps/api/app

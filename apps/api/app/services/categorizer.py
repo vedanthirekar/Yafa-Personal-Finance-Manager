@@ -195,7 +195,7 @@ async def categorize(
 def exemplar_id(text: str, category: str) -> str:
     """Stable UUID-shaped point ID derived from content.
 
-    Shared with ``ml/seed_qdrant.py`` so the seed corpus and live corrections
+    Shared with ``tools/seed_qdrant.py`` so the seed corpus and live corrections
     use one scheme and a correction that restates a seeded pair overwrites it
     rather than adding a duplicate vote.
     """
@@ -217,7 +217,7 @@ async def add_exemplar(
     Tagged with ``source`` so evaluation can exclude user data and keep
     measuring against the fixed seed corpus.
 
-    The point ID is derived from the content, matching ``ml/seed_qdrant.py``.
+    The point ID is derived from the content, matching ``tools/seed_qdrant.py``.
     A random ID would let the same correction accumulate one point per save --
     confirm "coffee" as Food five times and it casts five votes instead of one,
     quietly biasing the kNN toward whatever the user happens to correct most

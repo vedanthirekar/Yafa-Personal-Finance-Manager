@@ -1,7 +1,7 @@
-"""Generate the demo account's transaction pool from ``ml/us_expense_spec.py``.
+"""Generate the demo account's transaction pool from ``tools/us_expense_spec.py``.
 
 Run from the repo root:
-    uv run python -m ml.build_demo_data
+    uv run python -m tools.build_demo_data
 
 Writes ``data/demo-transactions.csv`` (description, category, amount), which
 ``app.services.demo_seed`` samples to fill 18 months of history.

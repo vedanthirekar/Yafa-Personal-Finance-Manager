@@ -1,6 +1,6 @@
 # Categorizer accuracy — where it stands
 
-Regenerate with `uv run python -m ml.eval_categorizer`, which writes
+Regenerate with `uv run python -m tools.eval_categorizer`, which writes
 `data/eval_report.json`.
 
 ## Two numbers, and only one of them means anything
@@ -51,15 +51,15 @@ templates) plus `data/sample-data.csv` (an anonymised Indian expense ledger).
 
 ## What replaced it
 
-`ml/us_expense_spec.py` — a curated US vocabulary of merchants and the items
+`tools/us_expense_spec.py` — a curated US vocabulary of merchants and the items
 they actually sell, grouped by affinity so the generator never emits "museum
-admission steam". `ml/build_training_data.py` expands it into ~7,800 exemplars,
+admission steam". `tools/build_training_data.py` expands it into ~7,800 exemplars,
 balanced at 800 per category (Education lands at 620, its vocabulary is
 smaller), weighted toward the `"{item} {merchant}"` shape the pipeline queries
 with.
 
 The same spec generates `data/demo-transactions.csv` via
-`ml/build_demo_data.py`, so the demo account shows merchants the model was
+`tools/build_demo_data.py`, so the demo account shows merchants the model was
 trained to recognise, with USD amounts that make sense.
 
 `data/categories.csv` and `data/sample-data.csv` are now unread. Left on disk

@@ -1,6 +1,6 @@
 """Rolling-origin backtest of the spend forecaster against simple baselines.
 
-    uv run python -m ml.eval_forecasting
+    uv run python -m tools.eval_forecasting
 
 Answers the question a model name can't: *is this forecast any better than
 doing nothing?* Every candidate makes one-step-ahead predictions from an

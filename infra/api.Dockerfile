@@ -22,7 +22,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 # here -- GPU inference is a local-development concern, not a container one.
 
 COPY apps/api ./apps/api
-COPY ml ./ml
+COPY tools ./tools
 COPY README.md ./
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked --no-dev
@@ -44,7 +44,7 @@ WORKDIR /app
 
 COPY --from=builder --chown=yafa:yafa /app/.venv /app/.venv
 COPY --from=builder --chown=yafa:yafa /app/apps/api /app/apps/api
-COPY --from=builder --chown=yafa:yafa /app/ml /app/ml
+COPY --from=builder --chown=yafa:yafa /app/tools /app/tools
 
 ENV PATH="/app/.venv/bin:$PATH" \
     PYTHONUNBUFFERED=1 \
