@@ -18,6 +18,36 @@ spending is heading.
 
 ---
 
+## Notes on the rewrite
+
+This replaces a 2024 hackathon build with the same one, still. Voice-first
+capture, BERT + Qdrant categorization, a forecast — the intent never changed.
+What changed is the engineering underneath it, dimension by dimension:
+
+| | Then (2024) | Now |
+|---|---|---|
+| Frontend | Streamlit multi-page app | Next.js 16 |
+| Frontend ↔ backend | plain `requests` calls | typed REST + WebSocket |
+| Database | SQLite, one file committed to the repo, schema recreated with `Base.metadata.create_all()` on every boot | Postgres, versioned with Alembic |
+| Backend execution | sync FastAPI, blocking SQLAlchemy | fully async, `asyncpg` end to end |
+| Categorization | BERT + Qdrant — but Qdrant embedded, holding an exclusive file lock | same BERT + Qdrant, Qdrant running as a real service |
+| Voice capture | one blocking HTTP round trip | streaming WebSocket + HTTP, both sharing one `pipeline` extraction path |
+| Auth | two systems: a YAML credential store driving the frontend's session cookie, separate from the backend's own JWT | one JWT-based story |
+| Offline tooling | nested inside the backend (`backend/scripts/`) | its own top-level package (`tools/`), out of the API's runtime image |
+| Quality | no CI, no tests | CI pipeline, 102 tests, type checking |
+| Reporting | none | Power BI star schema |
+
+The backend already had the right instinct going in — FastAPI, BERT, Qdrant
+are all present in the 2024 build. What it lacked was the shape to run
+reliably: no migrations, no async, and two half-built auth systems instead of
+one. The rewrite is that shape, not a new idea.
+
+One deliberate scope cut: the investment page wasn't ported. It rendered
+returns from `random.uniform()`, and a rewrite is the wrong time to carry
+a fabricated feature forward unexamined.
+
+---
+
 ## How it works
 
 **Voice → transaction.** `WS /ws/voice` (streaming) and `POST
@@ -108,34 +138,6 @@ your database, refresh. Six tables, 20 DAX measures. Report pages ship empty
 on purpose — Power BI's visual-container JSON is undocumented and
 version-sensitive, so [`powerbi/README.md`](powerbi/README.md) gives exact
 field placements instead of a fragile checked-in layout.
-
-## Notes on the rewrite
-
-The 2024 hackathon build already had the right instinct — a FastAPI backend
-behind a thin client, BERT + Qdrant for categorization — but the shape around
-it didn't hold up. A Streamlit multi-page app called that backend over plain
-`requests`, backed by one SQLite file committed to the repo and recreated with
-`Base.metadata.create_all()` on every boot; there was no migration history, no
-async, and voice capture was a single blocking HTTP round trip. Auth was two
-systems wired together — a YAML credential store driving Streamlit's session
-cookie, separate from the backend's own JWT issuing.
-
-The rewrite keeps the same core idea and changes the shape it runs in: two
-independently deployable apps (`apps/api`, `apps/web`) talking over a typed
-REST + WebSocket boundary, Postgres with Alembic migrations instead of a
-committed database file, and Qdrant running as a real service rather than an
-embedded client that held an exclusive lock on the collection. Inside the API,
-a `pipeline` service now sits between routers and the model layer so the
-WebSocket and HTTP voice entry points share one code path instead of each
-reimplementing extraction and categorization. Auth collapsed to one JWT-based
-story. Offline tooling — corpus generation, evaluation, seeding — moved out of
-the backend into its own top-level package (`tools/`) so it stops shipping in
-the API's runtime image. None of this existed before: a CI pipeline, a test
-suite, and a Power BI reporting layer alongside the app itself.
-
-One deliberate scope cut: the investment page wasn't ported. It rendered
-returns from `random.uniform()`, and a rewrite is the wrong time to carry
-a fabricated feature forward unexamined.
 
 ---
 
