@@ -9,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge, Input, Select } from "@/components/ui/input";
 import { api } from "@/lib/api";
 import type { Transaction } from "@/lib/types";
-import { confidenceBand, formatDate, formatMoney } from "@/lib/utils";
+import { categoryColor, confidenceBand, formatDate, formatMoney } from "@/lib/utils";
 
 const CATEGORIES = [
   "Food", "Transportation", "Apparel", "Household", "Health",
@@ -66,24 +66,22 @@ export default function TransactionsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Transactions</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            {total.toLocaleString()} total
-            {isFetching && !isLoading ? " · updating…" : ""}
-          </p>
-        </div>
+      <div>
+        <h1 className="font-display text-3xl font-semibold">Transactions</h1>
+        <p className="mt-2 text-sm text-ink-muted">
+          {total.toLocaleString()} total
+          {isFetching && !isLoading ? " · updating…" : ""}
+        </p>
       </div>
 
       <div className="flex flex-wrap gap-3">
         <div className="relative min-w-64 flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-subtle" />
           <Input
             placeholder="Search descriptions…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
+            className="pl-10"
           />
         </div>
         <Select
@@ -103,43 +101,54 @@ export default function TransactionsPage() {
         </Select>
       </div>
 
-      <Card>
+      <Card className="overflow-hidden">
         <CardContent className="p-0">
           {isLoading ? (
             <div className="flex items-center justify-center py-16">
-              <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
+              <Loader2 className="h-6 w-6 animate-spin text-ink-subtle" />
             </div>
           ) : !data?.items.length ? (
-            <p className="py-16 text-center text-sm text-slate-500">
+            <p className="py-16 text-center text-sm text-ink-muted">
               Nothing here yet. Record one on the Record tab.
             </p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="border-b border-slate-200 text-left text-xs uppercase tracking-wide text-slate-500 dark:border-slate-800">
+                <thead className="border-b border-cream-300 bg-cream-100 text-left text-xs uppercase tracking-wider text-ink-subtle">
                   <tr>
-                    <th className="px-4 py-3 font-medium">Date</th>
-                    <th className="px-4 py-3 font-medium">Description</th>
-                    <th className="px-4 py-3 font-medium">Category</th>
-                    <th className="px-4 py-3 text-right font-medium">Amount</th>
-                    <th className="w-10 px-4 py-3" />
+                    <th className="px-5 py-3 font-medium">Date</th>
+                    <th className="px-5 py-3 font-medium">Description</th>
+                    <th className="px-5 py-3 font-medium">Category</th>
+                    <th className="px-5 py-3 text-right font-medium">Amount</th>
+                    <th className="w-10 px-5 py-3" />
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                <tbody className="divide-y divide-cream-200">
                   {data.items.map((t: Transaction) => {
                     const band = confidenceBand(t.confidence);
                     return (
-                      <tr key={t.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                        <td className="whitespace-nowrap px-4 py-3 text-slate-500">
+                      <tr key={t.id} className="transition-colors hover:bg-cream-100">
+                        <td className="whitespace-nowrap px-5 py-3.5 text-ink-subtle">
                           {formatDate(t.date)}
                         </td>
-                        <td className="px-4 py-3">
-                          <div className="font-medium">{t.description}</div>
-                          {t.merchant && (
-                            <div className="text-xs text-slate-500">{t.merchant}</div>
-                          )}
+                        <td className="px-5 py-3.5">
+                          <div className="flex items-center gap-3">
+                            {/* Colour chip keyed to the category, matching the
+                                pie chart on Insights so the same category is
+                                the same colour everywhere in the app. */}
+                            <span
+                              className="h-8 w-1.5 shrink-0 rounded-full"
+                              style={{ backgroundColor: categoryColor(t.category) }}
+                            />
+                            <div className="min-w-0">
+                              <div className="font-medium">{t.description}</div>
+                              {t.merchant && (
+                                <div className="text-xs text-ink-subtle">{t.merchant}</div>
+                              )}
+                            </div>
+                          </div>
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-5 py-3.5">
                           <div className="flex items-center gap-2">
                             {/* Changing this posts a correction, not a plain
                                 edit -- it also feeds Qdrant as training data. */}
@@ -148,7 +157,7 @@ export default function TransactionsPage() {
                               onChange={(e) =>
                                 correct.mutate({ id: t.id, category: e.target.value })
                               }
-                              className="h-8 w-36 text-xs"
+                              className="h-9 w-36 text-xs"
                             >
                               {CATEGORIES.map((c) => (
                                 <option key={c} value={c}>
@@ -164,14 +173,14 @@ export default function TransactionsPage() {
                             </Badge>
                           </div>
                         </td>
-                        <td className="whitespace-nowrap px-4 py-3 text-right font-medium tabular-nums">
+                        <td className="whitespace-nowrap px-5 py-3.5 text-right font-semibold tabular-nums">
                           {formatMoney(t.amount, t.currency)}
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-5 py-3.5">
                           <Button
                             size="icon"
                             variant="ghost"
-                            className="h-8 w-8 text-slate-400 hover:text-rose-600"
+                            className="h-8 w-8 text-ink-subtle hover:bg-rose-50 hover:text-rose-700"
                             onClick={() => remove.mutate(t.id)}
                             title="Delete"
                           >
@@ -190,7 +199,7 @@ export default function TransactionsPage() {
 
       {pageCount > 1 && (
         <div className="flex items-center justify-between text-sm">
-          <span className="text-slate-500">
+          <span className="text-ink-subtle">
             Page {page + 1} of {pageCount}
           </span>
           <div className="flex gap-2">

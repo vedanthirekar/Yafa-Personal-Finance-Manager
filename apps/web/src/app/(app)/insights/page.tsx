@@ -22,6 +22,16 @@ import { Card, CardContent, CardHeader, CardTitle, StatCard } from "@/components
 import { api } from "@/lib/api";
 import { categoryColor, formatMonth, formatMoney } from "@/lib/utils";
 
+/** Recharts tooltips are inline-styled, not class-styled, so the palette has
+ *  to be repeated here as literals. Declared once and shared by both charts. */
+const TOOLTIP_STYLE = {
+  borderRadius: 12,
+  border: "1px solid #e2dfd3",
+  backgroundColor: "#fcfbf7",
+  fontSize: 12,
+  color: "#002e22",
+} as const;
+
 export default function InsightsPage() {
   const forecast = useQuery({ queryKey: ["forecast"], queryFn: () => api.forecast(6) });
   const breakdown = useQuery({ queryKey: ["breakdown"], queryFn: () => api.categoryBreakdown() });
@@ -93,7 +103,7 @@ export default function InsightsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
+        <Loader2 className="h-6 w-6 animate-spin text-ink-subtle" />
       </div>
     );
   }
@@ -104,14 +114,16 @@ export default function InsightsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Insights</h1>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+        <h1 className="font-display text-3xl font-semibold">Insights</h1>
+        <p className="mt-2 text-sm text-ink-muted">
           Where your money went, and where it&rsquo;s heading.
         </p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {/* The only dark card on the page: the number you actually came for. */}
         <StatCard
+          tone="dark"
           label="This month so far"
           value={thisMonth ? formatMoney(thisMonth.amount) : "—"}
           hint={thisMonth ? formatMonth(thisMonth.date) : undefined}
@@ -152,7 +164,7 @@ export default function InsightsPage() {
                would imply confidence the second one doesn't have. The model's
                name is left out on purpose: "ARIMA(5, 1, 0)" tells the reader
                nothing they can act on. */
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-ink-subtle">
               {overall.is_fitted
                 ? `Projected from ${overall.history.length} months of history · shaded band is the likely range`
                 : "Too little history to project — showing your average instead"}
@@ -162,19 +174,19 @@ export default function InsightsPage() {
         <CardContent>
           <ResponsiveContainer width="100%" height={320}>
             <ComposedChart data={series} margin={{ top: 8, right: 8, bottom: 0, left: 8 }}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-slate-200 dark:stroke-slate-800" />
+              <CartesianGrid strokeDasharray="3 3" className="stroke-cream-300" />
               <XAxis
                 dataKey="date"
                 tickFormatter={formatMonth}
                 tick={{ fontSize: 12 }}
                 stroke="currentColor"
-                className="text-slate-400"
+                className="text-ink-subtle"
               />
               <YAxis
                 tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
                 tick={{ fontSize: 12 }}
                 stroke="currentColor"
-                className="text-slate-400"
+                className="text-ink-subtle"
               />
               {/* Recharts types the formatter value as a broad ValueType
                   (number | string | array), so narrow it here rather than
@@ -186,29 +198,32 @@ export default function InsightsPage() {
                 labelFormatter={(label) =>
                   typeof label === "string" ? formatMonth(label) : ""
                 }
-                contentStyle={{ borderRadius: 8, fontSize: 12 }}
+                contentStyle={TOOLTIP_STYLE}
               />
               <Legend wrapperStyle={{ fontSize: 12 }} />
+              {/* Actual and forecast share one colour and differ only by dash.
+                  Two hues would imply two quantities; this is one series, part
+                  measured and part projected. */}
               <Area
                 dataKey="band"
                 stroke="none"
-                fill="#6366f1"
-                fillOpacity={0.12}
+                fill="#03d47c"
+                fillOpacity={0.18}
                 name="80% range"
                 connectNulls
               />
               <Line
                 dataKey="actual"
-                stroke="#6366f1"
-                strokeWidth={2}
+                stroke="#0b5132"
+                strokeWidth={2.5}
                 dot={false}
                 name="Actual"
                 connectNulls
               />
               <Line
                 dataKey="forecast"
-                stroke="#6366f1"
-                strokeWidth={2}
+                stroke="#0b5132"
+                strokeWidth={2.5}
                 strokeDasharray="5 5"
                 dot={false}
                 name="Forecast"
@@ -234,6 +249,7 @@ export default function InsightsPage() {
                   innerRadius={60}
                   outerRadius={110}
                   paddingAngle={2}
+                  stroke="none"
                 >
                   {(breakdown.data ?? []).map((row) => (
                     <Cell key={row.category} fill={categoryColor(row.category)} />
@@ -243,7 +259,7 @@ export default function InsightsPage() {
                   formatter={(value) =>
                     typeof value === "number" ? formatMoney(value) : "—"
                   }
-                  contentStyle={{ borderRadius: 8, fontSize: 12 }}
+                  contentStyle={TOOLTIP_STYLE}
                 />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
               </PieChart>
@@ -254,25 +270,25 @@ export default function InsightsPage() {
         <Card>
           <CardHeader>
             <CardTitle>Unusual months</CardTitle>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-ink-subtle">
               Category spend more than 2σ above its own average
             </p>
           </CardHeader>
           <CardContent className="space-y-2">
             {!forecast.data?.anomalies.length ? (
-              <p className="py-8 text-center text-sm text-slate-500">
+              <p className="py-8 text-center text-sm text-ink-muted">
                 Nothing unusual found.
               </p>
             ) : (
               forecast.data.anomalies.slice(0, 6).map((a) => (
                 <div
                   key={`${a.date}-${a.category}`}
-                  className="flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 dark:border-amber-900 dark:bg-amber-950/40"
+                  className="flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-2.5"
                 >
-                  <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                  <AlertTriangle className="h-4 w-4 shrink-0 text-amber-700" />
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-medium">{a.category}</div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400">
+                    <div className="text-xs text-ink-subtle">
                       {formatMonth(a.date)} · usually {formatMoney(a.expected)}
                     </div>
                   </div>
@@ -280,7 +296,7 @@ export default function InsightsPage() {
                     <div className="text-sm font-semibold tabular-nums">
                       {formatMoney(a.amount)}
                     </div>
-                    <div className="text-xs text-slate-400">{a.z_score}σ</div>
+                    <div className="text-xs text-ink-subtle">{a.z_score}σ</div>
                   </div>
                 </div>
               ))

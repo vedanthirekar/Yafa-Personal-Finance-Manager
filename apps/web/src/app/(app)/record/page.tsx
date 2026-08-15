@@ -31,7 +31,7 @@ function Waveform({ level, active }: { level: number; active: boolean }) {
             key={i}
             className={cn(
               "w-1 rounded-full transition-all duration-75",
-              active ? "bg-indigo-500" : "bg-slate-200 dark:bg-slate-700",
+              active ? "bg-mint-500" : "bg-forest-700",
             )}
             style={{ height: `${height}px` }}
           />
@@ -102,82 +102,77 @@ export default function RecordPage() {
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Record an expense</h1>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+        <h1 className="font-display text-3xl font-semibold">Record an expense</h1>
+        <p className="mt-2 text-sm text-ink-muted">
           Just say it — &ldquo;twelve fifty at Starbucks&rdquo;. Amount, merchant, and
           category are worked out for you; nothing is saved until you approve it.
         </p>
       </div>
 
-      <Card>
-        <CardContent className="space-y-4 p-8 pt-8">
-          <Waveform level={recorder.level} active={recording} />
+      {/* The recorder sits on the dark surface. It is the one thing on this
+          page you are meant to touch, and the colour inversion says so without
+          needing a label. */}
+      <div className="rounded-card bg-forest-950 p-8">
+        <Waveform level={recorder.level} active={recording} />
 
-          <div className="flex items-center justify-center gap-3">
-            {!recording ? (
-              <Button
-                size="lg"
-                onClick={() => void recorder.start()}
-                disabled={busy}
-                className="gap-2 rounded-full px-8"
-              >
-                {busy ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <Mic className="h-5 w-5" />
-                )}
-                {recorder.state === "processing" ? "Transcribing…" : "Start recording"}
+        <div className="mt-6 flex items-center justify-center gap-3">
+          {!recording ? (
+            <Button size="lg" onClick={() => void recorder.start()} disabled={busy}>
+              {busy ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <Mic className="h-5 w-5" />
+              )}
+              {recorder.state === "processing" ? "Transcribing…" : "Start recording"}
+            </Button>
+          ) : (
+            <>
+              <Button size="lg" variant="destructive" onClick={recorder.stop}>
+                <Square className="h-4 w-4 fill-current" />
+                Stop · {String(Math.floor(recorder.seconds / 60)).padStart(2, "0")}:
+                {String(recorder.seconds % 60).padStart(2, "0")}
               </Button>
-            ) : (
-              <>
-                <Button
-                  size="lg"
-                  variant="destructive"
-                  onClick={recorder.stop}
-                  className="gap-2 rounded-full px-8"
-                >
-                  <Square className="h-4 w-4 fill-current" />
-                  Stop · {String(Math.floor(recorder.seconds / 60)).padStart(2, "0")}:
-                  {String(recorder.seconds % 60).padStart(2, "0")}
-                </Button>
-                <Button size="icon" variant="ghost" onClick={recorder.cancel} title="Cancel">
-                  <X className="h-5 w-5" />
-                </Button>
-              </>
-            )}
-          </div>
-
-          {/* Interim transcript. Explicitly marked as provisional, because it
-              will be replaced by the final pass. */}
-          {recording && (
-            <p className="min-h-6 text-center text-sm italic text-slate-500 dark:text-slate-400">
-              {recorder.partial || "Listening…"}
-            </p>
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={recorder.cancel}
+                title="Cancel"
+                className="text-cream-300/60 hover:bg-forest-900 hover:text-cream-50"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </>
           )}
+        </div>
 
-          {recorder.error && (
-            <p className="text-center text-sm text-rose-600 dark:text-rose-400">
-              {recorder.error}
-            </p>
-          )}
-        </CardContent>
-      </Card>
+        {/* Interim transcript. Explicitly marked as provisional, because it
+            will be replaced by the final pass. */}
+        {recording && (
+          <p className="mt-5 min-h-6 text-center text-sm italic text-cream-300/80">
+            {recorder.partial || "Listening…"}
+          </p>
+        )}
+
+        {recorder.error && (
+          <p className="mt-5 text-center text-sm text-rose-300">{recorder.error}</p>
+        )}
+      </div>
 
       {draft && (
         <Card>
-          <CardContent className="space-y-4 p-6 pt-6">
-            <div className="rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm text-indigo-800 dark:border-indigo-900 dark:bg-indigo-950/40 dark:text-indigo-200">
+          <CardContent className="space-y-5 p-6 pt-6">
+            <div className="rounded-xl bg-mint-50 px-4 py-3 text-sm font-medium text-forest-700">
               Not saved yet — check the details and fix anything that&rsquo;s wrong.
             </div>
 
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
-                <p className="text-xs uppercase tracking-wide text-slate-400">Heard</p>
-                <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-                  &ldquo;{draft.transcript}&rdquo;
+                <p className="text-xs font-medium uppercase tracking-wider text-ink-subtle">
+                  Heard
                 </p>
+                <p className="mt-1.5 text-sm text-ink">&ldquo;{draft.transcript}&rdquo;</p>
               </div>
-              <Badge className="shrink-0 bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+              <Badge className="shrink-0 bg-cream-200 text-ink-muted">
                 via {draft.extraction_method}
               </Badge>
             </div>
@@ -230,9 +225,7 @@ export default function RecordPage() {
                       confidence no longer describes what's in the box, so show
                       that it was changed instead of a stale score. */}
                   {draft.category !== predicted?.category ? (
-                    <Badge className="bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-                      changed by you
-                    </Badge>
+                    <Badge className="bg-mint-100 text-forest-700">changed by you</Badge>
                   ) : (
                     <Badge
                       className={
@@ -259,16 +252,15 @@ export default function RecordPage() {
             </div>
 
             {!draft.amount && (
-              <p className="text-sm text-amber-600 dark:text-amber-400">
+              <p className="text-sm text-amber-700">
                 No amount was picked up — add one before saving.
               </p>
             )}
 
-            <div className="flex items-center gap-3 pt-2">
+            <div className="flex items-center gap-2 pt-1">
               <Button
                 onClick={() => save.mutate(draft)}
                 disabled={!draft.amount || !draft.category || save.isPending || saved}
-                className="gap-2"
               >
                 {save.isPending ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -290,9 +282,7 @@ export default function RecordPage() {
             </div>
 
             {save.error && (
-              <p className="text-sm text-rose-600 dark:text-rose-400">
-                {(save.error as Error).message}
-              </p>
+              <p className="text-sm text-rose-700">{(save.error as Error).message}</p>
             )}
           </CardContent>
         </Card>

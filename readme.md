@@ -35,8 +35,9 @@ uv run uvicorn app.main:app --reload --app-dir apps/api
 cd apps/web && npm install && npm run dev
 ```
 
-Open http://localhost:3000 and click **Try the demo** — it seeds 18 months of
-data, no signup. API docs are at http://localhost:8000/docs.
+Open http://localhost:3000 and follow **Try the demo** through to the sign-in
+page — the button there seeds 18 months of data and drops you into the app, no
+signup. API docs are at http://localhost:8000/docs.
 
 Everything in one shot instead:
 
@@ -129,6 +130,22 @@ consecutive.
 > for this pass; the diagnosis and the plan are in
 > [`docs/forecasting-notes.md`](docs/forecasting-notes.md).
 
+### The interface
+
+Deep green and cream, pill buttons, and a serif for anything that states a
+number. The whole palette lives in the `@theme` block in
+`apps/web/src/app/globals.css`, which is what makes `bg-forest-900` and
+`text-ink-subtle` real utility classes — no component hardcodes a hex value,
+and retheming is one file.
+
+There is no dark mode, deliberately: one committed look, with
+`color-scheme: light` declared so native date pickers, selects, and scrollbars
+don't render in dark chrome when the OS is set to dark.
+
+`/` is a static marketing page — a plain server component with no hooks and no
+data fetching, so Next ships zero JavaScript for it. The app itself starts at
+`/login`.
+
 ---
 
 ## Layout
@@ -145,6 +162,7 @@ apps/
     alembic/      migrations
     tests/        90 tests
   web/            Next.js 16 + Tailwind v4 + TanStack Query + Recharts
+                  routes: / (landing) · /login · /record · /transactions · /insights
 ml/               corpus building, Qdrant seeding, evaluation, SQLite migration
 powerbi/          star-schema SQL + PBIP semantic model (TMDL)
 infra/            Dockerfiles

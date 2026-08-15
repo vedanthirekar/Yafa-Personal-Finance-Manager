@@ -4,23 +4,30 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
+/**
+ * Buttons are fully rounded pills, per the reference design.
+ *
+ * `mint` is deliberately scarce -- one per screen, on the thing the user came
+ * to do (Save, Get started, Try the demo). Everything else is `ink` or
+ * `outline`, so the green never has to compete with itself for attention.
+ */
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 dark:focus-visible:ring-offset-slate-950",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mint-500 focus-visible:ring-offset-2 focus-visible:ring-offset-cream-100 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
-        default: "bg-indigo-600 text-white hover:bg-indigo-700",
-        secondary:
-          "bg-slate-100 text-slate-900 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700",
-        outline:
-          "border border-slate-300 bg-transparent hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800",
-        ghost: "hover:bg-slate-100 dark:hover:bg-slate-800",
+        default: "bg-mint-500 text-forest-950 hover:bg-mint-400",
+        // For dark green surfaces, where mint-on-green is the wrong contrast.
+        ink: "bg-ink text-cream-50 hover:bg-forest-800",
+        secondary: "bg-cream-200 text-ink hover:bg-cream-300",
+        outline: "border border-cream-300 bg-transparent text-ink hover:bg-cream-200",
+        ghost: "text-ink-muted hover:bg-cream-200 hover:text-ink",
         destructive: "bg-rose-600 text-white hover:bg-rose-700",
       },
       size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-8 rounded-md px-3 text-xs",
-        lg: "h-12 rounded-xl px-8 text-base",
+        default: "h-10 px-5 py-2",
+        sm: "h-8 px-3.5 text-xs",
+        lg: "h-12 px-8 text-base",
         icon: "h-10 w-10",
       },
     },

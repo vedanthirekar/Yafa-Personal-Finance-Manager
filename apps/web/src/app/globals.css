@@ -1,26 +1,69 @@
 @import "tailwindcss";
 
+/**
+ * Design tokens.
+ *
+ * Tailwind v4 has no JS config file -- anything declared inside `@theme`
+ * becomes a real utility class. `--color-forest-900` generates `bg-forest-900`,
+ * `text-forest-900`, `border-forest-900`, and so on. So this block is the
+ * whole palette, and nothing in the app should hardcode a hex value.
+ *
+ * The scheme is deep green + cream, borrowed from Expensify: cream is the
+ * working surface, deep green is for moments that should feel like the
+ * product talking (the marketing hero, the sidebar, the primary summary card),
+ * and mint is reserved for one thing -- the action you're meant to take.
+ */
+@theme {
+  /* Deep greens. Surfaces, not text. */
+  --color-forest-950: #03170f;
+  --color-forest-900: #052a1c;
+  --color-forest-800: #083a26;
+  --color-forest-700: #0b5132;
+  --color-forest-600: #10693f;
+
+  /* Mint. The accent -- primary buttons, active nav, the "actual" chart line. */
+  --color-mint-500: #03d47c;
+  --color-mint-400: #2ee096;
+  --color-mint-300: #8de8bd;
+  --color-mint-100: #d7f7e7;
+  --color-mint-50: #edfbf4;
+
+  /* Cream. Page and card backgrounds, and the hairlines between them. */
+  --color-cream-50: #fcfbf7;
+  --color-cream-100: #f7f5ef;
+  --color-cream-200: #efede4;
+  --color-cream-300: #e2dfd3;
+
+  /* Text. Never pure black -- everything carries a little green. */
+  --color-ink: #002e22;
+  --color-ink-muted: #4a5f57;
+  --color-ink-subtle: #7a8a83;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+
+  --radius-card: 1.25rem;
+}
+
+/**
+ * One committed look, no dark mode.
+ *
+ * `color-scheme: light` is what stops the browser rendering date pickers,
+ * scrollbars, and select dropdowns in dark chrome when the OS is set to dark
+ * -- without it those native controls ignore the palette entirely.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  color-scheme: light;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-cream-100);
+  color: var(--color-ink);
+}
+
+/* Display type is set tight and optically, the way the reference does it.
+   Fraunces is a variable font with an optical-size axis, so large headings
+   pick up higher contrast on their own. */
+.font-display {
+  letter-spacing: -0.015em;
 }

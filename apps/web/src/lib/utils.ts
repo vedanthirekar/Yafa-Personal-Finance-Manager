@@ -46,21 +46,28 @@ export function confidenceBand(confidence: number | null): {
   className: string;
 } {
   if (confidence === null) {
-    return { label: "manual", className: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300" };
+    return { label: "manual", className: "bg-cream-200 text-ink-muted" };
   }
   if (confidence >= 0.8) {
-    return { label: `${Math.round(confidence * 100)}%`, className: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300" };
+    return { label: `${Math.round(confidence * 100)}%`, className: "bg-mint-100 text-forest-700" };
   }
   if (confidence >= 0.5) {
-    return { label: `${Math.round(confidence * 100)}%`, className: "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300" };
+    return { label: `${Math.round(confidence * 100)}%`, className: "bg-amber-100 text-amber-800" };
   }
-  return { label: `${Math.round(confidence * 100)}%`, className: "bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300" };
+  return { label: `${Math.round(confidence * 100)}%`, className: "bg-rose-100 text-rose-700" };
 }
 
-/** Stable colour per category, so a category keeps its colour across charts. */
+/**
+ * Stable colour per category, so a category keeps its colour across charts.
+ *
+ * Anchored on the brand greens and walked outward through teal, olive, and
+ * clay rather than using a rainbow: a pie chart in ten unrelated hues fights
+ * the rest of the page, and these all sit at a similar lightness so no one
+ * slice jumps forward for a reason the data didn't earn.
+ */
 const CHART_COLORS = [
-  "#6366f1", "#14b8a6", "#f59e0b", "#ec4899", "#8b5cf6",
-  "#06b6d4", "#84cc16", "#f97316", "#3b82f6", "#ef4444",
+  "#03d47c", "#0b5132", "#4fb286", "#8de8bd", "#10693f",
+  "#7fa88c", "#c9a227", "#c2703d", "#2f7d6b", "#a8bfa0",
 ];
 
 export function categoryColor(category: string): string {

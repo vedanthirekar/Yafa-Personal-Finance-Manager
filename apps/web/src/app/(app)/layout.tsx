@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import * as React from "react";
 
-import { Nav } from "@/components/nav";
+import { MobileNav, Sidebar } from "@/components/nav";
 import { tokens } from "@/lib/api";
 
 /**
@@ -34,16 +34,36 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     () => false,
   );
 
+  /**
+   * Read the token again here rather than depending on `signedIn`.
+   *
+   * On a hard page load `signedIn` is `false` for the hydration render -- that
+   * is the whole point of the server snapshot -- and effects fire with the
+   * values from the render that committed. Depending on it would redirect a
+   * perfectly signed-in user to /login on every refresh, before the
+   * post-hydration re-render ever gets to say otherwise. Inside an effect we
+   * are unambiguously on the client, so localStorage can just be asked.
+   */
   React.useEffect(() => {
-    if (!signedIn) router.replace("/login");
-  }, [signedIn, router]);
+    if (!tokens.access) router.replace("/login");
+  }, [router]);
 
   if (!signedIn) return null;
 
   return (
     <div className="min-h-screen">
-      <Nav />
-      <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
+      <Sidebar />
+      <MobileNav />
+      {/* Two nested boxes on purpose. The outer one reserves the 15rem the
+          fixed sidebar occupies; the inner one centres the content in what's
+          left. Doing both on one element would centre against the full
+          viewport and then shove the result right, off-centre. `pb-24` clears
+          the fixed mobile tab bar, which otherwise covers the last row. */}
+      <div className="lg:pl-60">
+        <main className="mx-auto max-w-5xl px-4 pb-24 pt-6 lg:px-10 lg:pb-14 lg:pt-10">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }
