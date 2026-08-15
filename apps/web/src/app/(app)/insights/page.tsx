@@ -261,7 +261,10 @@ export default function InsightsPage() {
                   innerRadius={60}
                   outerRadius={110}
                   paddingAngle={2}
-                  stroke="none"
+                  /* Card-coloured edge, so the lighter wedges keep a defined
+                     boundary instead of bleeding into the cream behind them. */
+                  stroke="#fcfbf7"
+                  strokeWidth={2}
                 >
                   {(breakdown.data ?? []).map((row) => (
                     <Cell key={row.category} fill={categoryColor(row.category)} />

@@ -60,20 +60,48 @@ export function confidenceBand(confidence: number | null): {
 /**
  * Stable colour per category, so a category keeps its colour across charts.
  *
- * Anchored on the brand greens and walked outward through teal, olive, and
- * clay rather than using a rainbow: a pie chart in ten unrelated hues fights
- * the rest of the page, and these all sit at a similar lightness so no one
- * slice jumps forward for a reason the data didn't earn.
+ * One colour per category rather than a hashed lookup into a shared pool,
+ * because the category set is closed: every category owns a hue and no two
+ * can collide. The hashed version put Education, Food, and Transportation on
+ * the same green in a seven-slice pie.
+ *
+ * Still anchored on the brand green, but walked around the wheel rather than
+ * held at one hue — a donut is read by comparing neighbouring wedges, and ten
+ * tones of the same green can't be told apart no matter how tidy they look in
+ * a swatch row. Every pair is at least ΔE2000 17 apart, and lightness varies
+ * too (L* 30–75) so the wedges stay separable in greyscale.
  */
-const CHART_COLORS = [
-  "#03d47c", "#0b5132", "#4fb286", "#8de8bd", "#10693f",
-  "#7fa88c", "#c9a227", "#c2703d", "#2f7d6b", "#a8bfa0",
-];
+const CHART_COLORS: Record<string, string> = {
+  Food: "#03d47c",           // brand spring green
+  Transportation: "#4a83c4", // blue
+  Apparel: "#6d3f8f",        // plum
+  Household: "#137a8c",      // teal
+  Health: "#b5485d",         // berry
+  Education: "#0b5132",      // pine, the brand dark
+  Entertainment: "#e0b13a",  // amber
+  "Social Life": "#c2703d",  // clay
+  Tourism: "#6b7a45",        // olive
+  Subscription: "#6b4f3f",   // mocha
+};
+
+/**
+ * The categories the classifier can emit. Charts, filters, and the record
+ * form all read this one list, and it is derived from the colour map so a
+ * category can't be added to the UI without also being given a colour.
+ */
+export const CATEGORIES = Object.keys(CHART_COLORS);
+
+/** Fallback pool for categories outside the closed set — older rows, or a
+ *  model revision that emits something new before the UI catches up. */
+const FALLBACK_COLORS = ["#8a6d9e", "#3f6f5f", "#a8572f", "#5b6f8a"];
 
 export function categoryColor(category: string): string {
+  const known = CHART_COLORS[category];
+  if (known) return known;
+
   let hash = 0;
   for (let i = 0; i < category.length; i++) {
     hash = (hash * 31 + category.charCodeAt(i)) | 0;
   }
-  return CHART_COLORS[Math.abs(hash) % CHART_COLORS.length];
+  return FALLBACK_COLORS[Math.abs(hash) % FALLBACK_COLORS.length];
 }

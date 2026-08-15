@@ -9,12 +9,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge, Input, Select } from "@/components/ui/input";
 import { api } from "@/lib/api";
 import type { Transaction } from "@/lib/types";
-import { categoryColor, confidenceBand, formatDate, formatMoney } from "@/lib/utils";
-
-const CATEGORIES = [
-  "Food", "Transportation", "Apparel", "Household", "Health",
-  "Education", "Entertainment", "Social Life", "Tourism", "Subscription",
-];
+import {
+  CATEGORIES,
+  categoryColor,
+  confidenceBand,
+  formatDate,
+  formatMoney,
+} from "@/lib/utils";
 
 const PAGE_SIZE = 25;
 

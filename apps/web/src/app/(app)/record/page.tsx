@@ -10,12 +10,7 @@ import { Badge, Input, Label, Select } from "@/components/ui/input";
 import { useVoiceRecorder } from "@/hooks/use-voice-recorder";
 import { api } from "@/lib/api";
 import type { VoiceResult } from "@/lib/types";
-import { cn, confidenceBand, formatMoney } from "@/lib/utils";
-
-const CATEGORIES = [
-  "Food", "Transportation", "Apparel", "Household", "Health",
-  "Education", "Entertainment", "Social Life", "Tourism", "Subscription",
-];
+import { CATEGORIES, cn, confidenceBand, formatMoney } from "@/lib/utils";
 
 /** Bars are driven by the live RMS level, with a fixed per-bar offset so the
  *  shape looks like a waveform rather than every bar moving in lockstep. */
@@ -104,8 +99,7 @@ export default function RecordPage() {
       <div>
         <h1 className="font-display text-3xl font-semibold">Record an expense</h1>
         <p className="mt-2 text-sm text-ink-muted">
-          Just say it — &ldquo;twelve fifty at Starbucks&rdquo;. Amount, merchant, and
-          category are worked out for you; nothing is saved until you approve it.
+          Try it now. What did you last spend on? Eg. &ldquo;twelve fifty at Starbucks&rdquo;.
         </p>
       </div>
 
