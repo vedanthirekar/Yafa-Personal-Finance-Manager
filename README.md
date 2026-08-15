@@ -25,9 +25,7 @@ spending is heading.
 | ![Record an expense](docs/screenshots/record.png) | ![Parsed and categorized, pending confirmation](docs/screenshots/record-reviewed.png) | ![Spend breakdown and forecast](docs/screenshots/insights.png) |
 
 Saying "I spent $300 for my trip to Chicago" fills in the amount, date,
-merchant, and category (Tourism, 81% confidence) from one sentence — nothing
-is saved until it's confirmed. Insights turns the resulting history into a
-forecast, a category breakdown, and the months that ran hot.
+merchant, and category (Tourism, 81% confidence) from the sentence and gets saved after your approval. Visualizations are used for providing insights on the your expenses. 
 
 ---
 
