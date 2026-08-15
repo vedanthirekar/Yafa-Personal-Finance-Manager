@@ -94,7 +94,7 @@ def vector_size() -> int:
 async def embed(text: str) -> list[float]:
     def _encode() -> list[float]:
         vector = get_model().encode(text, normalize_embeddings=True)
-        return vector.tolist()  # type: ignore[no-any-return]
+        return vector.tolist()
 
     return await anyio.to_thread.run_sync(_encode)
 
@@ -104,7 +104,7 @@ async def embed_batch(texts: list[str]) -> list[list[float]]:
         vectors = get_model().encode(
             texts, normalize_embeddings=True, show_progress_bar=False, batch_size=64
         )
-        return vectors.tolist()  # type: ignore[no-any-return]
+        return vectors.tolist()
 
     return await anyio.to_thread.run_sync(_encode)
 

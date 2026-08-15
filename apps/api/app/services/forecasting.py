@@ -27,6 +27,7 @@ before, with the right number of parameters instead of five.
 import warnings
 from datetime import date
 from decimal import Decimal
+from typing import cast
 
 import numpy as np
 import pandas as pd
@@ -186,7 +187,9 @@ def forecast_series(
     monthly = _to_monthly(df)
 
     history = [
-        ForecastPoint(date=stamp.date(), amount=Decimal(str(round(value, 2))))
+        # pandas-stubs types Series.items() keys as Hashable regardless of the
+        # actual index dtype, so the monthly-Timestamp index needs a cast.
+        ForecastPoint(date=cast(pd.Timestamp, stamp).date(), amount=Decimal(str(round(value, 2))))
         for stamp, value in monthly.items()
     ]
 
@@ -292,7 +295,7 @@ def detect_anomalies(df: pd.DataFrame, threshold: float = ANOMALY_Z_THRESHOLD) -
             if z >= threshold:
                 anomalies.append(
                     Anomaly(
-                        date=stamp.date(),
+                        date=cast(pd.Timestamp, stamp).date(),
                         category=str(category),
                         amount=Decimal(str(round(float(value), 2))),
                         expected=Decimal(str(round(mean, 2))),

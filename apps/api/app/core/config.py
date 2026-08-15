@@ -29,8 +29,11 @@ class Settings(BaseSettings):
 
     # --- database ---------------------------------------------------------
     # asyncpg driver; alembic rewrites this to psycopg for its sync engine.
+    # Default is constructed rather than a bare string literal -- Field's
+    # default is typed to match the annotation, and a str there is a real
+    # type mismatch even though pydantic would parse it fine at runtime.
     database_url: PostgresDsn = Field(
-        default="postgresql+asyncpg://yafa:yafa@localhost:5432/yafa",
+        default=PostgresDsn("postgresql+asyncpg://yafa:yafa@localhost:5432/yafa"),
     )
     db_echo: bool = False
     db_pool_size: int = 10
@@ -104,4 +107,4 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     """Cached so importing modules don't each re-read the environment."""
-    return Settings()  # type: ignore[call-arg]  # values come from env/.env
+    return Settings()  # values come from env/.env
