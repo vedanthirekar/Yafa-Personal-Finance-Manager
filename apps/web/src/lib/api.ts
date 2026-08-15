@@ -19,6 +19,7 @@ import type {
   Transaction,
   TransactionPage,
   User,
+  VoiceConfirmPayload,
   VoiceResult,
 } from "./types";
 
@@ -223,6 +224,9 @@ export const api = {
   categoryBreakdown: () =>
     request<CategoryBreakdownItem[]>("/transactions/stats/by-category"),
 
+  /** Model-quality signal for ops and Power BI. Deliberately not shown in the
+   *  app: "avg model confidence" is a number about the system, not about the
+   *  user's money, and Insights is for the user. */
   categorizationQuality: () =>
     request<CategorizationQuality>("/transactions/stats/categorization-quality"),
 
@@ -239,8 +243,8 @@ export const api = {
     return request<VoiceResult>("/voice/transcribe", { method: "POST", body: form });
   },
 
-  confirmVoice: (result: VoiceResult) =>
-    request<Transaction>("/voice/confirm", { method: "POST", body: result }),
+  confirmVoice: (payload: VoiceConfirmPayload) =>
+    request<Transaction>("/voice/confirm", { method: "POST", body: payload }),
 
   forecast: (steps = 6) => request<ForecastResponse>(`/forecast/me?steps=${steps}`),
 };

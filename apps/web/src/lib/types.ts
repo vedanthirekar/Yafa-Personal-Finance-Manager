@@ -69,6 +69,7 @@ export interface CategorizeResponse {
   alternatives: CategoryScore[];
 }
 
+/** What the server proposes after transcribing. Nothing is saved yet. */
 export interface VoiceResult {
   transcript: string;
   description: string;
@@ -79,6 +80,18 @@ export interface VoiceResult {
   category: string | null;
   confidence: number;
   extraction_method: ExtractionMethod;
+}
+
+/**
+ * What we send to POST /voice/confirm once the user approves.
+ *
+ * `category` is by then whatever the user settled on, so the model's original
+ * guess is echoed back separately. Without it the server can't tell a
+ * correction from an acceptance, and the categorizer would score 100% forever.
+ */
+export interface VoiceConfirmPayload extends VoiceResult {
+  predicted_category: string | null;
+  predicted_confidence: number;
 }
 
 export interface CategoryBreakdownItem {

@@ -1,0 +1,34 @@
+{
+  "demo": {
+    "months": 18,
+    "folds": 10,
+    "mean_monthly_spend": 7217.39,
+    "mae": {
+      "mean (all history)": 3092.58,
+      "mean (last 3)": 3786.36,
+      "ARIMA auto (AICc grid)": 3843.9,
+      "seasonal naive": 3967.39,
+      "ARIMA(0,1,1)": 4191.18,
+      "ETS (simple exp smoothing)": 4235.57,
+      "naive (last month)": 4611.06,
+      "ARIMA(5,1,0) [current]": 6684.16
+    },
+    "best": "mean (all history)"
+  },
+  "demo_legacy": {
+    "months": 75,
+    "folds": 67,
+    "mean_monthly_spend": 26314.25,
+    "mae": {
+      "naive (last month)": 15832.61,
+      "ETS (simple exp smoothing)": 16514.98,
+      "ARIMA(0,1,1)": 16540.98,
+      "mean (last 3)": 16594.78,
+      "ARIMA auto (AICc grid)": 16845.67,
+      "ARIMA(5,1,0) [current]": 18447.83,
+      "seasonal naive": 20851.31,
+      "mean (all history)": 23325.3
+    },
+    "best": "naive (last month)"
+  }
+}

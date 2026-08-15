@@ -12,6 +12,12 @@ Protocol (server perspective):
 Partial transcripts are previews and will be replaced; the ``final`` frame is
 the authoritative parse.
 
+**Nothing here is saved.** The ``final`` frame is a proposal: the client shows
+it for review and the user commits it with ``POST /voice/confirm``, which is
+the only write path for voice. Persisting on finalize would both rob the user
+of the chance to fix a misheard amount or a wrong category, and -- since the
+client also calls ``/voice/confirm`` -- write the transaction twice.
+
 Auth note: browsers cannot set an Authorization header on a WebSocket
 handshake, so the access token arrives as a query parameter. That puts it in
 server access logs, which is why access tokens are short-lived (30 minutes)
@@ -26,7 +32,6 @@ from starlette.websockets import WebSocketState
 from ..core.database import SessionLocal
 from ..core.deps import get_current_user_ws
 from ..core.logging import get_logger
-from ..models import TransactionSource
 from ..schemas.voice import WSError, WSMessageType, WSPartial
 from ..services import pipeline, speech
 
@@ -129,7 +134,12 @@ async def voice_socket(websocket: WebSocket, token: str | None = None) -> None:
 
 
 async def _finalize(websocket: WebSocket, db, user, audio: bytes) -> None:  # type: ignore[no-untyped-def]
-    """Transcribe the full recording, parse it, and persist."""
+    """Transcribe the full recording and parse it. Writes nothing.
+
+    ``process_transcript`` may create a Merchant row as a side effect of
+    resolving the name, so the session is rolled back afterwards -- a recording
+    the user ends up discarding should leave no trace.
+    """
     transcript = await speech.transcribe_audio_bytes(audio, suffix=".webm")
     if not transcript:
         await websocket.send_json(
@@ -139,20 +149,10 @@ async def _finalize(websocket: WebSocket, db, user, audio: bytes) -> None:  # ty
         )
         return
 
-    parsed, merchant = await pipeline.process_transcript(
+    parsed, _merchant = await pipeline.process_transcript(
         transcript, db=db, default_currency=user.currency
     )
-
-    # Only persist a usable transaction. Without an amount there is nothing to
-    # track, so the client shows the parse and asks the user to fill it in.
-    if parsed.amount is not None:
-        await pipeline.persist_transaction(
-            db,
-            user_id=user.id,
-            parsed=parsed,
-            merchant=merchant,
-            source=TransactionSource.VOICE,
-        )
+    await db.rollback()
 
     await websocket.send_json(
         {"type": WSMessageType.FINAL.value, "result": parsed.model_dump(mode="json")}

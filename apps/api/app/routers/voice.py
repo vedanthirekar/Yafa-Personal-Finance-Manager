@@ -1,8 +1,8 @@
-from fastapi import APIRouter, File, HTTPException, Query, UploadFile, status
+from fastapi import APIRouter, File, HTTPException, UploadFile, status
 
 from ..core.deps import CurrentUser, DbSession
 from ..models import TransactionSource
-from ..schemas import TransactionOut, VoiceTranscribeResponse
+from ..schemas import TransactionOut, VoiceConfirmRequest, VoiceTranscribeResponse
 from ..services import pipeline, speech
 
 router = APIRouter(prefix="/voice", tags=["voice"])
@@ -17,13 +17,14 @@ async def transcribe(
     db: DbSession,
     current_user: CurrentUser,
     file: UploadFile = File(..., description="Audio clip (wav/webm/m4a/ogg)"),
-    persist: bool = Query(False, description="Also save the parsed transaction"),
 ) -> VoiceTranscribeResponse:
     """Transcribe an audio clip and parse it into a structured transaction.
 
-    Non-streaming counterpart to ``WS /ws/voice``. Returns the parsed result
-    without saving unless ``persist=true`` -- the web app previews first so
-    the user can correct a misheard amount before it's committed.
+    Non-streaming counterpart to ``WS /ws/voice``, and like it this **saves
+    nothing** -- the result is a proposal the user reviews and commits through
+    ``POST /voice/confirm``. Speech recognition mishears amounts and the
+    categorizer is right about three times in four, so writing straight from a
+    recording would fill the ledger with rows nobody agreed to.
     """
     audio = await file.read()
     if not audio:
@@ -44,30 +45,24 @@ async def transcribe(
             "Could not make out any speech in that recording",
         )
 
-    parsed, merchant = await pipeline.process_transcript(
+    parsed, _merchant = await pipeline.process_transcript(
         transcript, db=db, default_currency=current_user.currency
     )
-
-    if persist:
-        await pipeline.persist_transaction(
-            db,
-            user_id=current_user.id,
-            parsed=parsed,
-            merchant=merchant,
-            source=TransactionSource.VOICE,
-        )
-
+    # Resolving a merchant name can insert a Merchant row. Nothing was
+    # committed, so roll it back: a clip the user never confirms should leave
+    # no trace.
+    await db.rollback()
     return parsed
 
 
 @router.post("/confirm", response_model=TransactionOut, status_code=status.HTTP_201_CREATED)
 async def confirm(
-    parsed: VoiceTranscribeResponse, db: DbSession, current_user: CurrentUser
+    parsed: VoiceConfirmRequest, db: DbSession, current_user: CurrentUser
 ) -> TransactionOut:
     """Save a previewed transaction, after any edits the user made.
 
-    Takes the response body back rather than re-transcribing, so corrections
-    made in the UI survive.
+    The only write path for voice. Takes the response body back rather than
+    re-transcribing, so corrections made in the UI survive.
     """
     if parsed.amount is None:
         raise HTTPException(
@@ -82,7 +77,17 @@ async def confirm(
         parsed=parsed,
         merchant=merchant,
         source=TransactionSource.VOICE,
+        predicted_category=parsed.predicted_category,
+        predicted_confidence=parsed.predicted_confidence,
     )
+
+    # The user overrode the model during review. That is the same signal as
+    # editing the category later, so it feeds the same two places: the
+    # merchant's sticky default and Qdrant's exemplar set.
+    if parsed.category and parsed.category != parsed.predicted_category:
+        await pipeline.learn_from_correction(
+            db, transaction=transaction, new_category=parsed.category
+        )
 
     from .transactions import _get_owned, _to_out
 

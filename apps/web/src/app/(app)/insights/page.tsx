@@ -25,10 +25,6 @@ import { categoryColor, formatMonth, formatMoney } from "@/lib/utils";
 export default function InsightsPage() {
   const forecast = useQuery({ queryKey: ["forecast"], queryFn: () => api.forecast(6) });
   const breakdown = useQuery({ queryKey: ["breakdown"], queryFn: () => api.categoryBreakdown() });
-  const quality = useQuery({
-    queryKey: ["quality"],
-    queryFn: () => api.categorizationQuality(),
-  });
 
   /**
    * Actuals and projection share one chart, so they must share one array.
@@ -72,6 +68,26 @@ export default function InsightsPage() {
     [breakdown.data],
   );
 
+  /**
+   * The last two monthly buckets, for the headline cards.
+   *
+   * They are reported separately rather than as a month-over-month percentage:
+   * the newest bucket is the month you're currently in, so it's partial, and
+   * dividing a half-finished month by a complete one always reads as a
+   * dramatic drop in spending that hasn't happened.
+   */
+  const history = forecast.data?.overall.history ?? [];
+  const thisMonth = history.at(-1);
+  const lastMonth = history.at(-2);
+
+  const biggestCategory = React.useMemo(
+    () =>
+      [...(breakdown.data ?? [])].sort(
+        (a, b) => Number.parseFloat(b.total_amount) - Number.parseFloat(a.total_amount),
+      )[0],
+    [breakdown.data],
+  );
+
   const loading = forecast.isLoading || breakdown.isLoading;
 
   if (loading) {
@@ -90,12 +106,21 @@ export default function InsightsPage() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Insights</h1>
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          Spend history, projection, and how the categorizer is doing.
+          Where your money went, and where it&rsquo;s heading.
         </p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Total spend" value={formatMoney(totalSpend)} />
+        <StatCard
+          label="This month so far"
+          value={thisMonth ? formatMoney(thisMonth.amount) : "—"}
+          hint={thisMonth ? formatMonth(thisMonth.date) : undefined}
+        />
+        <StatCard
+          label="Last month"
+          value={lastMonth ? formatMoney(lastMonth.amount) : "—"}
+          hint={lastMonth ? formatMonth(lastMonth.date) : undefined}
+        />
         <StatCard
           label="Next month (projected)"
           value={nextMonth ? formatMoney(nextMonth.amount) : "—"}
@@ -106,18 +131,15 @@ export default function InsightsPage() {
           }
         />
         <StatCard
-          label="Avg model confidence"
-          value={quality.data ? quality.data.avg_confidence.toFixed(2) : "—"}
+          label="Biggest category"
+          value={biggestCategory ? biggestCategory.category : "—"}
           hint={
-            quality.data ? `${quality.data.predictions} predictions recorded` : undefined
+            biggestCategory
+              ? `${formatMoney(biggestCategory.total_amount)} · ${Math.round(
+                  biggestCategory.pct_of_total,
+                )}% of ${formatMoney(totalSpend)}`
+              : undefined
           }
-        />
-        <StatCard
-          label="Suggestions kept"
-          value={
-            quality.data ? `${Math.round(quality.data.acceptance_rate * 100)}%` : "—"
-          }
-          hint="How often you accepted the model's category"
         />
       </div>
 
@@ -125,13 +147,15 @@ export default function InsightsPage() {
         <CardHeader>
           <CardTitle>Monthly spend and forecast</CardTitle>
           {overall && (
-            /* State the model and whether it actually fitted. A mean baseline
-               drawn identically to a real ARIMA fit would imply confidence
-               the projection doesn't have. */
+            /* Say whether the dotted line is a real projection or a flat
+               average standing in for thin history -- drawing both the same way
+               would imply confidence the second one doesn't have. The model's
+               name is left out on purpose: "ARIMA(5, 1, 0)" tells the reader
+               nothing they can act on. */
             <p className="text-xs text-slate-400">
               {overall.is_fitted
-                ? `${overall.model} · 80% prediction interval`
-                : `${overall.model} · not enough history for a fitted model`}
+                ? `Projected from ${overall.history.length} months of history · shaded band is the likely range`
+                : "Too little history to project — showing your average instead"}
             </p>
           )}
         </CardHeader>

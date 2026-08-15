@@ -52,6 +52,28 @@ class VoiceTranscribeResponse(BaseModel):
     extraction_method: ExtractionMethod
 
 
+class VoiceConfirmRequest(VoiceTranscribeResponse):
+    """A reviewed transaction the user is committing.
+
+    The client sends back the object it was given, with whatever it edited.
+    That means ``category`` and ``confidence`` now describe the *user's*
+    decision, so the model's original proposal is echoed separately in the two
+    ``predicted_*`` fields -- otherwise a category corrected during review
+    would be recorded as one the model got right.
+
+    Both are optional so a client that doesn't echo them still works; the
+    prediction is simply stored as "no proposal", which is counted as not
+    accepted rather than silently as a hit.
+    """
+
+    predicted_category: str | None = Field(
+        default=None, description="Category the model proposed, before the user's edits"
+    )
+    predicted_confidence: float = Field(
+        default=0.0, ge=0.0, le=1.0, description="Confidence attached to that proposal"
+    )
+
+
 class CategorizeRequest(BaseModel):
     text: str = Field(min_length=1, max_length=1000)
 

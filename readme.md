@@ -59,6 +59,14 @@ docker compose up --build
 returns interim transcripts, and on `finalize` returns one authoritative
 result. `POST /voice/transcribe` does the same without streaming.
 
+**Neither one saves anything.** Both return a proposal that the user reviews
+and commits with `POST /voice/confirm`, the single write path for voice.
+Speech recognition mishears amounts and the categorizer is right about three
+times in four, so writing straight from a recording fills the ledger with rows
+nobody agreed to. When the user fixes a category during that review, the
+original prediction is sent back alongside it — otherwise the model would be
+scored against the user's own answer and read as perfect forever.
+
 Whisper (`small.en`) auto-selects CUDA with `int8_float16` and falls back to
 CPU — including when a CUDA load fails at runtime, not just when no GPU is
 present.
@@ -113,6 +121,14 @@ in for thin history is never drawn as though it were a real fit. Months with no
 spending are zero-filled, or ARIMA would treat non-adjacent months as
 consecutive.
 
+> **The forecaster is not good, and the repo can prove it.** Run
+> `uv run python -m ml.eval_forecasting` for a rolling-origin backtest against
+> seven baselines. ARIMA(5,1,0) currently places last of eight on the demo
+> account — 45% worse than simply repeating last month's total — and sixth of
+> eight on the imported historical data. Fixing it is deliberately out of scope
+> for this pass; the diagnosis and the plan are in
+> [`docs/forecasting-notes.md`](docs/forecasting-notes.md).
+
 ---
 
 ## Layout
@@ -127,7 +143,7 @@ apps/
       services/   categorizer, speech, nlp_extract, llm_extract, pipeline,
                   forecasting, demo_seed
     alembic/      migrations
-    tests/        86 tests
+    tests/        90 tests
   web/            Next.js 16 + Tailwind v4 + TanStack Query + Recharts
 ml/               corpus building, Qdrant seeding, evaluation, SQLite migration
 powerbi/          star-schema SQL + PBIP semantic model (TMDL)
@@ -138,12 +154,13 @@ compose.yaml      postgres · qdrant · redis · api · web
 ## Commands
 
 ```sh
-uv run pytest apps/api/tests            # 86 tests; integration ones skip if the stack is down
+uv run pytest apps/api/tests            # 90 tests; integration ones skip if the stack is down
 uv run ruff check apps/api ml
 uv run mypy apps/api/app
 
 uv run python -m ml.seed_qdrant            # index the corpus (--recreate to rebuild)
 uv run python -m ml.eval_categorizer       # accuracy + confusion matrix
+uv run python -m ml.eval_forecasting       # forecast MAE vs naive baselines
 uv run python -m ml.build_training_data    # regenerate the corpus
 uv run alembic revision --autogenerate -m "..."
 

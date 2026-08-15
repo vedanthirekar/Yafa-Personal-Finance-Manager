@@ -284,3 +284,87 @@ class TestForecastRoute:
         body = response.json()
         assert body["overall"]["is_fitted"] is False
         assert body["overall"]["forecast"] == []
+
+
+class TestVoiceConfirm:
+    """``POST /voice/confirm`` is the only write path for voice.
+
+    Transcription and the WebSocket return proposals; the user approves them
+    here. That makes this the point where the model's guess and the user's
+    decision must be recorded as two separate things.
+    """
+
+    @staticmethod
+    def _proposal(**overrides: object) -> dict[str, object]:
+        payload: dict[str, object] = {
+            "transcript": "twelve fifty at Starbucks",
+            "description": "coffee",
+            "amount": "12.50",
+            "currency": "USD",
+            "merchant": None,
+            "date": "2026-01-15",
+            "category": "Food",
+            "confidence": 0.91,
+            "extraction_method": "words",
+            "predicted_category": "Food",
+            "predicted_confidence": 0.91,
+        }
+        payload.update(overrides)
+        return payload
+
+    async def test_amount_is_required(self, auth_client: AsyncClient) -> None:
+        response = await auth_client.post("/voice/confirm", json=self._proposal(amount=None))
+        assert response.status_code == 422
+
+    async def test_keeping_the_suggestion_counts_as_accepted(
+        self, auth_client: AsyncClient
+    ) -> None:
+        response = await auth_client.post("/voice/confirm", json=self._proposal())
+        assert response.status_code == 201
+        assert response.json()["category"] == "Food"
+
+        quality = (await auth_client.get("/transactions/stats/categorization-quality")).json()
+        assert quality["predictions"] == 1
+        assert quality["accepted"] == 1
+
+    async def test_correcting_before_saving_is_recorded_as_a_rejection(
+        self, auth_client: AsyncClient
+    ) -> None:
+        """The regression this guards against is subtle and silent.
+
+        The client posts back the object it was given, so ``category`` holds
+        the user's correction by the time it arrives. Storing that as the
+        prediction would mean the categorizer scored itself on the user's own
+        answer -- 100% accuracy, forever, no matter how wrong it was.
+        """
+        response = await auth_client.post(
+            "/voice/confirm",
+            json=self._proposal(category="Entertainment", predicted_category="Food"),
+        )
+        assert response.status_code == 201
+        # The user's choice is what gets saved...
+        assert response.json()["category"] == "Entertainment"
+
+        # ...and the model is scored against what it actually said.
+        quality = (await auth_client.get("/transactions/stats/categorization-quality")).json()
+        assert quality["predictions"] == 1
+        assert quality["accepted"] == 0
+        assert quality["acceptance_rate"] == 0.0
+
+    async def test_model_declining_to_guess_is_not_an_acceptance(
+        self, auth_client: AsyncClient
+    ) -> None:
+        """Below the similarity threshold the categorizer returns nothing.
+
+        That is a miss, not a hit. Folding it in with correct answers would
+        let the acceptance rate rise every time the model gave up.
+        """
+        response = await auth_client.post(
+            "/voice/confirm",
+            json=self._proposal(category=None, predicted_category=None, confidence=0.0),
+        )
+        assert response.status_code == 201
+        assert response.json()["category"] == "Uncategorized"
+
+        quality = (await auth_client.get("/transactions/stats/categorization-quality")).json()
+        assert quality["accepted"] == 0

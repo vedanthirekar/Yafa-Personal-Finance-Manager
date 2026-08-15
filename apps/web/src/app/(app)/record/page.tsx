@@ -44,25 +44,52 @@ function Waveform({ level, active }: { level: number; active: boolean }) {
 export default function RecordPage() {
   const queryClient = useQueryClient();
   const recorder = useVoiceRecorder();
+
+  /**
+   * Two copies of the same parse, on purpose.
+   *
+   * `draft` is what the user edits and eventually saves. `predicted` is the
+   * server's untouched proposal, kept so we can tell the backend what the
+   * model actually guessed — by save time `draft.category` may be the user's
+   * correction instead.
+   *
+   * Nothing is written until Save. The recorder only returns a proposal.
+   */
   const [draft, setDraft] = React.useState<VoiceResult | null>(null);
+  const [predicted, setPredicted] = React.useState<VoiceResult | null>(null);
   const [saved, setSaved] = React.useState(false);
 
-  // The WebSocket persists the transaction on finalize, so the draft here is
-  // for reviewing and correcting what was heard.
-  React.useEffect(() => {
+  /**
+   * Seed the draft from a new recording, during render rather than in an
+   * effect. This is React's "adjusting state when a prop changes" pattern:
+   * comparing against the last value we handled lets us re-render once with
+   * the right state, instead of painting an empty form and then immediately
+   * repainting it. `lastSeen` is what makes Discard stick -- it clears the
+   * draft while `recorder.result` still holds the same object, and without
+   * the comparison the form would spring straight back.
+   */
+  const [lastSeen, setLastSeen] = React.useState<VoiceResult | null>(null);
+  if (recorder.result !== lastSeen) {
+    setLastSeen(recorder.result);
     if (recorder.result) {
       setDraft(recorder.result);
+      setPredicted(recorder.result);
       setSaved(false);
-      void queryClient.invalidateQueries({ queryKey: ["transactions"] });
     }
-  }, [recorder.result, queryClient]);
+  }
 
   const save = useMutation({
-    mutationFn: (result: VoiceResult) => api.confirmVoice(result),
+    mutationFn: (result: VoiceResult) =>
+      api.confirmVoice({
+        ...result,
+        predicted_category: predicted?.category ?? null,
+        predicted_confidence: predicted?.confidence ?? 0,
+      }),
     onSuccess: () => {
       setSaved(true);
       void queryClient.invalidateQueries({ queryKey: ["transactions"] });
       void queryClient.invalidateQueries({ queryKey: ["breakdown"] });
+      void queryClient.invalidateQueries({ queryKey: ["forecast"] });
     },
   });
 
@@ -78,7 +105,7 @@ export default function RecordPage() {
         <h1 className="text-2xl font-semibold tracking-tight">Record an expense</h1>
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           Just say it — &ldquo;twelve fifty at Starbucks&rdquo;. Amount, merchant, and
-          category are worked out for you.
+          category are worked out for you; nothing is saved until you approve it.
         </p>
       </div>
 
@@ -139,6 +166,10 @@ export default function RecordPage() {
       {draft && (
         <Card>
           <CardContent className="space-y-4 p-6 pt-6">
+            <div className="rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm text-indigo-800 dark:border-indigo-900 dark:bg-indigo-950/40 dark:text-indigo-200">
+              Not saved yet — check the details and fix anything that&rsquo;s wrong.
+            </div>
+
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <p className="text-xs uppercase tracking-wide text-slate-400">Heard</p>
@@ -195,11 +226,22 @@ export default function RecordPage() {
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="category">Category</Label>
-                  <Badge className={confidenceBand(draft.category ? draft.confidence : null).className}>
-                    {draft.category
-                      ? confidenceBand(draft.confidence).label
-                      : "unsure"}
-                  </Badge>
+                  {/* Once the user picks something different, the model's
+                      confidence no longer describes what's in the box, so show
+                      that it was changed instead of a stale score. */}
+                  {draft.category !== predicted?.category ? (
+                    <Badge className="bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                      changed by you
+                    </Badge>
+                  ) : (
+                    <Badge
+                      className={
+                        confidenceBand(draft.category ? draft.confidence : null).className
+                      }
+                    >
+                      {draft.category ? confidenceBand(draft.confidence).label : "unsure"}
+                    </Badge>
+                  )}
                 </div>
                 <Select
                   id="category"
@@ -239,6 +281,7 @@ export default function RecordPage() {
                 variant="ghost"
                 onClick={() => {
                   setDraft(null);
+                  setPredicted(null);
                   recorder.reset();
                 }}
               >

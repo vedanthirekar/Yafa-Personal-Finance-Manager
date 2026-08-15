@@ -122,18 +122,28 @@ async def persist_transaction(
     parsed: VoiceTranscribeResponse,
     merchant: Merchant | None,
     source: TransactionSource,
+    predicted_category: str | None,
+    predicted_confidence: float,
     fallback_category: str = "Uncategorized",
 ) -> Transaction:
     """Write the transaction and record what the model predicted.
 
+    ``parsed.category`` is the category the *user approved*; the two
+    ``predicted_*`` arguments are what the *model* originally proposed. They
+    diverge whenever someone fixes a misprediction in the review step, and
+    keeping them apart is the entire point of this table -- storing the user's
+    choice as the prediction would report perfect accuracy forever.
+
     The prediction row is written even when the model returned nothing --
     a low-confidence miss is exactly the case worth being able to count later.
     """
+    chosen = parsed.category or fallback_category
+
     transaction = Transaction(
         user_id=user_id,
         date=parsed.date,
         description=parsed.description,
-        category=parsed.category or fallback_category,
+        category=chosen,
         amount=parsed.amount if parsed.amount is not None else Decimal(0),
         currency=parsed.currency,
         merchant_id=merchant.id if merchant else None,
@@ -143,18 +153,54 @@ async def persist_transaction(
     db.add(transaction)
     await db.flush()
 
+    # A null prediction is never "accepted": the model declining to guess and
+    # the model guessing right are different outcomes, and folding them
+    # together would inflate the acceptance rate with non-answers.
+    accepted = predicted_category is not None and predicted_category == parsed.category
+
     db.add(
         CategoryPrediction(
             transaction_id=transaction.id,
-            predicted_category=parsed.category,
-            confidence=parsed.confidence,
+            predicted_category=predicted_category,
+            confidence=predicted_confidence,
             model_version=settings.embedding_model_version,
-            accepted=True,
+            accepted=accepted,
+            corrected_to=None if accepted or not parsed.category else parsed.category,
         )
     )
     await db.commit()
     await db.refresh(transaction)
     return transaction
+
+
+async def learn_from_correction(
+    db: AsyncSession,
+    *,
+    transaction: Transaction,
+    new_category: str,
+    remember_for_merchant: bool = True,
+) -> None:
+    """Propagate a user's category choice into the two places it teaches.
+
+    Split out of :func:`apply_correction` because a category can be fixed at
+    two moments -- in the voice review step *before* the first save, and by
+    editing an existing row *after*. Both are the same signal, so both must
+    reach the merchant default and the Qdrant exemplar set. Otherwise fixing a
+    misprediction would only train the model if you happened to save the wrong
+    category first.
+    """
+    if remember_for_merchant and transaction.merchant_id:
+        merchant = await db.get(Merchant, transaction.merchant_id)
+        if merchant is not None:
+            merchant.default_category = new_category
+            await db.commit()
+
+    # Best-effort: a Qdrant hiccup must not fail the user's edit, which is
+    # already committed by this point.
+    try:
+        await categorizer.add_exemplar(transaction.description, new_category)
+    except Exception as exc:
+        log.warning("pipeline.exemplar_write_failed", error=str(exc))
 
 
 async def apply_correction(
@@ -164,7 +210,7 @@ async def apply_correction(
     new_category: str,
     remember_for_merchant: bool = True,
 ) -> None:
-    """Record a user overriding a predicted category.
+    """Record a user overriding the category on an already-saved transaction.
 
     Three things happen, and all three are the point of storing predictions:
     the transaction is updated, the prediction is marked rejected (so accuracy
@@ -184,19 +230,14 @@ async def apply_correction(
         latest.accepted = False
         latest.corrected_to = new_category
 
-    if remember_for_merchant and transaction.merchant_id:
-        merchant = await db.get(Merchant, transaction.merchant_id)
-        if merchant is not None:
-            merchant.default_category = new_category
-
     await db.commit()
 
-    # Best-effort: a Qdrant hiccup must not fail the user's edit, which has
-    # already been committed above.
-    try:
-        await categorizer.add_exemplar(transaction.description, new_category)
-    except Exception as exc:
-        log.warning("pipeline.exemplar_write_failed", error=str(exc))
+    await learn_from_correction(
+        db,
+        transaction=transaction,
+        new_category=new_category,
+        remember_for_merchant=remember_for_merchant,
+    )
 
     log.info(
         "pipeline.correction_applied",

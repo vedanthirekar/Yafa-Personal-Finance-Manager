@@ -13,17 +13,32 @@ import { tokens } from "@/lib/api";
  * seeing an empty shell flash. The real enforcement is the API rejecting any
  * request without a valid bearer token.
  */
+/** Never fires: the token can't change without a full page load, since signing
+ *  out navigates via `window.location`. Required by useSyncExternalStore. */
+const subscribe = () => () => {};
+
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const [checked, setChecked] = React.useState(false);
+
+  /**
+   * `tokens.access` reads localStorage, which doesn't exist during SSR.
+   * useSyncExternalStore is the sanctioned way to read a client-only value:
+   * the third argument is the server snapshot, so both the server render and
+   * the hydration render see `false` and emit nothing, and only the render
+   * after hydration consults localStorage. Doing this with an effect and
+   * setState instead causes a cascading re-render on every mount.
+   */
+  const signedIn = React.useSyncExternalStore(
+    subscribe,
+    () => Boolean(tokens.access),
+    () => false,
+  );
 
   React.useEffect(() => {
-    // localStorage is unavailable during SSR, so the check runs after mount.
-    if (!tokens.access) router.replace("/login");
-    else setChecked(true);
-  }, [router]);
+    if (!signedIn) router.replace("/login");
+  }, [signedIn, router]);
 
-  if (!checked) return null;
+  if (!signedIn) return null;
 
   return (
     <div className="min-h-screen">
