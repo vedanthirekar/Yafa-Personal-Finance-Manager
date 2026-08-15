@@ -41,7 +41,7 @@ export function Sidebar() {
   const router = useRouter();
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-20 hidden w-60 flex-col bg-forest-950 px-4 py-6 lg:flex">
+    <aside className="fixed inset-y-0 left-0 z-20 hidden w-60 flex-col bg-pine-900 px-4 py-6 lg:flex">
       <Link href="/record" className="mb-8 flex items-center gap-3 px-2">
         <Logo />
         <span className="font-display text-xl font-semibold text-cream-50">YAFA</span>
@@ -55,8 +55,8 @@ export function Sidebar() {
             className={cn(
               "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
               pathname === href
-                ? "bg-forest-800 text-mint-400"
-                : "text-cream-300/70 hover:bg-forest-900 hover:text-cream-50",
+                ? "bg-pine-800 text-mint-400"
+                : "text-cream-300/70 hover:bg-pine-800 hover:text-cream-50",
             )}
           >
             <Icon className="h-[18px] w-[18px]" />
@@ -70,7 +70,7 @@ export function Sidebar() {
           api.logout();
           router.push("/login");
         }}
-        className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-cream-300/60 transition-colors hover:bg-forest-900 hover:text-cream-50"
+        className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-cream-300/60 transition-colors hover:bg-pine-800 hover:text-cream-50"
       >
         <LogOut className="h-[18px] w-[18px]" />
         Sign out

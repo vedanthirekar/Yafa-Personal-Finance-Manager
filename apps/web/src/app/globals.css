@@ -21,6 +21,13 @@
   --color-forest-700: #0b5132;
   --color-forest-600: #10693f;
 
+  /* Pine. The navigation rail only -- the same darkness as forest, shifted
+     toward blue so the sidebar reads as a distinct surface rather than as
+     more of the page. Deliberately narrow: three steps, one job. */
+  --color-pine-900: #04352f;
+  --color-pine-800: #0a4a41;
+  --color-pine-700: #0f5f54;
+
   /* Mint. The accent -- primary buttons, active nav, the "actual" chart line. */
   --color-mint-500: #03d47c;
   --color-mint-400: #2ee096;
