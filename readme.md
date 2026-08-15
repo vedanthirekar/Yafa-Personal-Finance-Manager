@@ -26,7 +26,7 @@ Requires Docker and [uv](https://docs.astral.sh/uv/).
 cp .env.example .env
 python -c "import secrets; print(secrets.token_urlsafe(64))"   # paste into YAFA_JWT_SECRET
 
-docker compose up -d postgres qdrant redis
+docker compose up -d postgres qdrant
 uv sync --group ml
 uv run alembic upgrade head
 uv run python -m ml.seed_qdrant                # index the categorization corpus
@@ -182,7 +182,7 @@ apps/
 ml/               corpus building, Qdrant seeding, evaluation, SQLite migration
 powerbi/          star-schema SQL + PBIP semantic model (TMDL)
 infra/            Dockerfiles
-compose.yaml      postgres · qdrant · redis · api · web
+compose.yaml      postgres · qdrant · api · web
 ```
 
 ## Commands

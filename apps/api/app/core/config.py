@@ -58,9 +58,6 @@ class Settings(BaseSettings):
     qdrant_api_key: str | None = None
     qdrant_collection: str = "expense_categories"
 
-    # --- redis ------------------------------------------------------------
-    redis_url: str = "redis://localhost:6379/0"
-
     # --- models -----------------------------------------------------------
     embedding_model_name: str = "sentence-transformers/all-MiniLM-L6-v2"
     embedding_model_version: str = "all-MiniLM-L6-v2/knn-v1"

@@ -38,7 +38,7 @@ STACK_UP = _stack_available()
 
 requires_stack = pytest.mark.skipif(
     not STACK_UP,
-    reason="compose stack not running (docker compose up -d postgres qdrant redis)",
+    reason="compose stack not running (docker compose up -d postgres qdrant)",
 )
 
 
