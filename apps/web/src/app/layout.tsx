@@ -29,7 +29,7 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  title: "YAFA — AI Expense Tracker",
+  title: "YAFA - AI Expense Tracker",
   description:
     "Voice-driven expense capture with semantic categorization and spend forecasting.",
 };
